@@ -2,8 +2,7 @@ import scala.io.Source
 
 object Main {
   def main(args: Array[String]): Unit = {
-    val lines = readFile("Test.txt")
-    println(lines)
+    DayOne.run()
   }
 
   def readFile(filename: String): List[String] = {
