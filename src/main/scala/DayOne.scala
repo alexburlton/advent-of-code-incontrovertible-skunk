@@ -1,17 +1,15 @@
-object DayOne
+class DayOne extends AbstractPuzzle(1)
 {
-  def run(): Unit = {
-    val input = Main.readFile("DayOne.txt")
-    var initialFuel = 0
-    input.foreach { it => initialFuel += calculateFuelForMass(it.toInt) }
+  override def partA(): Int = {
+    var fuel = 0
+    inputLines.foreach { it => fuel += calculateFuelForMass(it.toInt) }
+    fuel
+  }
 
-    println("1A: " + initialFuel)
-
+  override def partB(): Int = {
     var adjustedFuel = 0
-    var newSum = 0
-    input.foreach { it => newSum += calculateAdjustedFuelForMass(it.toInt) }
-
-    println("1B: " + newSum)
+    inputLines.foreach { it => adjustedFuel += calculateAdjustedFuelForMass(it.toInt) }
+    adjustedFuel
   }
 
   def addExtraFuel(initialFuel: Int): Int = {
