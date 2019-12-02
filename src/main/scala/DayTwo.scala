@@ -38,29 +38,29 @@ class DayTwo extends AbstractPuzzle(2) {
   }
 
   def processList(commands: List[Int]): List[Int] = {
-    val mutableList = new mutable.ListBuffer[Int]()
-    mutableList.addAll(commands)
+    val memory = new mutable.ListBuffer[Int]()
+    memory.addAll(commands)
 
     var instructionPointer = 0
     breakable {
       while (true) {
-        val command = mutableList(instructionPointer)
-        if (command == 99) break
+        val instruction = memory(instructionPointer)
+        if (instruction == 99) break
 
-        val posOne = mutableList(instructionPointer + 1)
-        val posTwo = mutableList(instructionPointer + 2)
-        val posToWrite = mutableList(instructionPointer + 3)
+        val paramOne = memory(instructionPointer + 1)
+        val paramTwo = memory(instructionPointer + 2)
+        val paramThree = memory(instructionPointer + 3)
 
-        if (command == 1) {
-          mutableList(posToWrite) = mutableList(posOne) + mutableList(posTwo)
+        if (instruction == 1) {
+          memory(paramThree) = memory(paramOne) + memory(paramTwo)
         } else {
-          mutableList(posToWrite) = mutableList(posOne) * mutableList(posTwo)
+          memory(paramThree) = memory(paramOne) * memory(paramTwo)
         }
 
         instructionPointer += 4
       }
     }
 
-    mutableList.toList
+    memory.toList
   }
 }
