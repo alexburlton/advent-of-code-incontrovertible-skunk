@@ -1,6 +1,7 @@
 import java.awt.Point
 
 import scala.collection.mutable
+import scala.util.matching.Regex
 
 class DayThree extends AbstractPuzzle(3) {
   override def partA(): Int = {
@@ -48,10 +49,10 @@ class Wire(path: String) {
 
     var currentPt = new Point(0, 0)
     path.foreach { move =>
-      val direction = move.charAt(0).toString
-      val distance = move.substring(1).toInt
+      val regex: Regex = """^([UDLR])(\d+)$""".r
+      val regex(direction, distanceStr) = move
 
-      for (_ <- 0 until distance) {
+      for (_ <- 0 until distanceStr.toInt) {
         val newPt = direction match {
           case "U" => new Point(currentPt.x, currentPt.y + 1)
           case "D" => new Point(currentPt.x, currentPt.y - 1)
