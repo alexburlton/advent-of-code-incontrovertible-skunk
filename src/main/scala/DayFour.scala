@@ -31,16 +31,17 @@ object DayFourHelpers {
     regex.findAllMatchIn(number.toString).nonEmpty
   }
 
+  /**
+   * Match against a regex like (?<!0)0{2}(?!0) for each digit 0-9
+   * 0{2} matches on two zeros
+   * (?<!0) is a negative look-behind for 0
+   * (?!0) is a negative look-ahead for 0
+   */
   def hasExactPair(number: Int): Boolean = {
     val str = number.toString
 
     for (digit <- 0 to 9) {
-      //(?<!0) is a negative look-behind for 0
-      //0{2} matches on two zeros
-      //(?!0) is a negative look-ahead for 0
-      //Put one of these together for each digit 0-9, and test the number with each
       val regex: Regex = s"(?<!$digit)$digit{2}(?!$digit)".r
-
       if (regex.findAllMatchIn(str).nonEmpty) return true
     }
 
