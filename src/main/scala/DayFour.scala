@@ -37,16 +37,8 @@ object DayFourHelpers {
    * (?<!0) is a negative look-behind for 0
    * (?!0) is a negative look-ahead for 0
    */
-  def hasExactPair(number: Int): Boolean = {
-    val str = number.toString
-
-    for (digit <- 0 to 9) {
-      val regex: Regex = s"(?<!$digit)$digit{2}(?!$digit)".r
-      if (regex.findAllMatchIn(str).nonEmpty) return true
-    }
-
-    false
-  }
+  val exactPairRegexes: List[Regex] = (0 to 9).map { digit => s"(?<!$digit)$digit{2}(?!$digit)".r }.toList
+  def hasExactPair(number: Int): Boolean = exactPairRegexes.exists(_.findAllMatchIn(number.toString).nonEmpty)
 
   def digitsAreNotDecreasing(number: Int): Boolean = {
     val list = number.toString.toList

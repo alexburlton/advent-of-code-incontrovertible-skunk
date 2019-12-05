@@ -10,5 +10,11 @@ class DayFive extends AbstractPuzzle(5) {
     computer.outputs.last
   }
 
-  override def partB(): Int = -1
+  override def partB(): Int = {
+    val computer = new IntcodeComputer(inputCommands, 5)
+    computer.process()
+
+    println(computer.outputs)
+    computer.outputs.last
+  }
 }

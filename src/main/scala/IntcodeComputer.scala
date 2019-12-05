@@ -41,6 +41,10 @@ class IntcodeComputer(initialMemory: List[Int], private val input: Int = 1) {
       case  2 => new OpCodeTwo(parameterModes)
       case  3 => new OpCodeThree(input, parameterModes)
       case  4 => new OpCodeFour(parameterModes)
+      case  5 => new OpCodeFive(parameterModes)
+      case  6 => new OpCodeSix(parameterModes)
+      case  7 => new OpCodeSeven(parameterModes)
+      case  8 => new OpCodeEight(parameterModes)
     }
   }
 
@@ -48,7 +52,12 @@ class IntcodeComputer(initialMemory: List[Int], private val input: Int = 1) {
     protected val parameters: List[Int] = readParameters()
     private val parameterModes = readParameterModes(rawModes)
 
-    def process()
+    def process(): Unit = {
+      //println(s"Processing $getClass: Parameters [$parameters], Raw modes [$rawModes], Parameter modes [$parameterModes]")
+      processImpl()
+      //println(s"New memory: $memory")
+    }
+    def processImpl()
 
     def getParameter(index: Int): Int = {
       val mode = parameterModes(index)
@@ -81,32 +90,66 @@ class IntcodeComputer(initialMemory: List[Int], private val input: Int = 1) {
   }
 
   sealed class OpCodeTerminate extends OpCode(0, List()) {
-    override def process(): Unit = {
+    override def processImpl(): Unit = {
       terminate = true
     }
   }
 
   sealed class OpCodeOne(rawModes: List[Int]) extends OpCode(3, rawModes) {
-    override def process(): Unit = {
+    override def processImpl(): Unit = {
       memory(parameters(2)) = getParameter(0) + getParameter(1)
     }
   }
 
   sealed class OpCodeTwo(rawModes: List[Int]) extends OpCode(3, rawModes) {
-    override def process(): Unit = {
+    override def processImpl(): Unit = {
       memory(parameters(2)) = getParameter(0) * getParameter(1)
     }
   }
 
   sealed class OpCodeThree(val input: Int, rawModes: List[Int]) extends OpCode(1, rawModes) {
-    override def process(): Unit = {
+    override def processImpl(): Unit = {
       memory(parameters.head) = input
     }
   }
 
   sealed class OpCodeFour(rawModes: List[Int]) extends OpCode(1, rawModes) {
-    override def process(): Unit = {
-      outputs.addOne(memory(parameters.head))
+    override def processImpl(): Unit = {
+      outputs.addOne(getParameter(0))
+    }
+  }
+
+  sealed class OpCodeFive(rawModes: List[Int]) extends OpCode(2, rawModes) {
+    override def processImpl(): Unit = {
+      val param = getParameter(0)
+      if (param != 0) {
+        instructionPointer = getParameter(1)
+      }
+    }
+  }
+
+  sealed class OpCodeSix(rawModes: List[Int]) extends OpCode(2, rawModes) {
+    override def processImpl(): Unit = {
+      val param = getParameter(0)
+      if (param == 0) {
+        instructionPointer = getParameter(1)
+      }
+    }
+  }
+
+  sealed class OpCodeSeven(rawModes: List[Int]) extends OpCode(3, rawModes) {
+    override def processImpl(): Unit = {
+      val param = getParameter(0)
+      val param2 = getParameter(1)
+      memory(parameters(2)) = if (param < param2) 1 else 0
+    }
+  }
+
+  sealed class OpCodeEight(rawModes: List[Int]) extends OpCode(3, rawModes) {
+    override def processImpl(): Unit = {
+      val param = getParameter(0)
+      val param2 = getParameter(1)
+      memory(parameters(2)) = if (param == param2) 1 else 0
     }
   }
 }
