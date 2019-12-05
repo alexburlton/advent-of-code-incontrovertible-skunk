@@ -18,28 +18,67 @@ class IntcodeComputer(initialMemory: List[Int]) {
 
   def process(): List[Int] = {
     while (!terminate) {
-      val instruction = memory(instructionPointer)
-      if (instruction == 99) {
-        terminate = true
-      } else {
-        processNonTerminatingCommand(instruction)
-      }
+      val opCode = readOpCode()
+      opCode.process()
     }
 
     memory.toList
   }
 
-  private def processNonTerminatingCommand(instruction: Int): Unit = {
-    val paramOne = memory(instructionPointer + 1)
-    val paramTwo = memory(instructionPointer + 2)
-    val paramThree = memory(instructionPointer + 3)
+  private def readOpCode(): OpCode = {
+    val instruction = memory(instructionPointer)
 
-    if (instruction == 1) {
-      memory(paramThree) = memory(paramOne) + memory(paramTwo)
-    } else {
-      memory(paramThree) = memory(paramOne) * memory(paramTwo)
+    instruction match {
+      case 99 => new OpCodeTerminate()
+      case  1 => new OpCodeOne()
+      case  2 => new OpCodeTwo()
     }
+  }
 
-    instructionPointer += 4
+  sealed abstract class OpCode(val expectedParameters: Int) {
+    protected val parameters: List[Int] = readParameters()
+
+    def process()
+
+    private def readParameters(): List[Int] = {
+      val buffer = new ListBuffer[Int]()
+      for (_ <- 0 until expectedParameters) {
+        instructionPointer += 1
+        buffer.addOne(memory(instructionPointer))
+      }
+
+      buffer.toList
+    }
+  }
+
+  class OpCodeTerminate extends OpCode(0) {
+    override def process(): Unit = {
+      terminate = true
+    }
+  }
+
+  class OpCodeOne extends OpCode(4) {
+    override def process(): Unit = {
+      memory(parameters(2)) = memory(parameters(0)) + memory(parameters(1))
+    }
+  }
+
+  class OpCodeTwo extends OpCode(4) {
+    override def process(): Unit = {
+      memory(parameters(2)) = memory(parameters(0)) * memory(parameters(1))
+    }
+  }
+
+  class OpCodeThree(val input: Int) extends OpCode(1) {
+    override def process(): Unit = {
+      memory(parameters.head) = input
+    }
+  }
+
+  class OpCodeFour() extends OpCode(1) {
+    override def process(): Unit = {
+      println(memory(parameters.head))
+    }
   }
 }
+
