@@ -15,6 +15,10 @@ class IntcodeComputerTest extends FlatSpec {
     assert(computer.outputs.toList == List(27))
   }
 
+  "First example with parameterModes" should "work" in {
+    assertInputProducesOutput(List(1002,4,3,4,33), List(1002,4,3,4,99))
+  }
+
   private def assertInputProducesOutput(input: List[Int], output: List[Int]): Unit = {
     assert(new IntcodeComputer(input).process() == output)
   }
