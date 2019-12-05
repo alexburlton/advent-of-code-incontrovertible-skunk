@@ -8,6 +8,13 @@ class IntcodeComputerTest extends FlatSpec {
     assertInputProducesOutput(List(1, 1, 1, 4, 99, 5, 6, 0, 99), List(30, 1, 1, 4, 2, 5, 6, 0, 99))
   }
 
+  "Simple program from 5A" should "output the input value provided" in {
+    val computer = new IntcodeComputer(List(3,0,4,0,99), 27)
+    computer.process()
+
+    assert(computer.outputs.toList == List(27))
+  }
+
   private def assertInputProducesOutput(input: List[Int], output: List[Int]): Unit = {
     assert(new IntcodeComputer(input).process() == output)
   }

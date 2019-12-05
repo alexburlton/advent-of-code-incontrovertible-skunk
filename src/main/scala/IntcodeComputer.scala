@@ -1,9 +1,10 @@
 import scala.collection.mutable.ListBuffer
 
-class IntcodeComputer(initialMemory: List[Int]) {
+class IntcodeComputer(initialMemory: List[Int], private val input: Int = 1) {
   private val memory: ListBuffer[Int] = initialiseMemory(initialMemory)
   private var instructionPointer: Int = 0
   private var terminate = false
+  val outputs: ListBuffer[Int] = new ListBuffer[Int]()
 
   private def initialiseMemory(initialMemory: List[Int]): ListBuffer[Int] = {
     val list = new ListBuffer[Int]()
@@ -27,11 +28,16 @@ class IntcodeComputer(initialMemory: List[Int]) {
 
   private def readOpCode(): OpCode = {
     val instruction = memory(instructionPointer)
+    instructionPointer += 1
 
-    instruction match {
+    val opCode = instruction % 100
+
+    opCode match {
       case 99 => new OpCodeTerminate()
       case  1 => new OpCodeOne()
       case  2 => new OpCodeTwo()
+      case  3 => new OpCodeThree(input)
+      case  4 => new OpCodeFour()
     }
   }
 
@@ -43,8 +49,8 @@ class IntcodeComputer(initialMemory: List[Int]) {
     private def readParameters(): List[Int] = {
       val buffer = new ListBuffer[Int]()
       for (_ <- 0 until expectedParameters) {
-        instructionPointer += 1
         buffer.addOne(memory(instructionPointer))
+        instructionPointer += 1
       }
 
       buffer.toList
@@ -57,13 +63,13 @@ class IntcodeComputer(initialMemory: List[Int]) {
     }
   }
 
-  class OpCodeOne extends OpCode(4) {
+  class OpCodeOne extends OpCode(3) {
     override def process(): Unit = {
       memory(parameters(2)) = memory(parameters(0)) + memory(parameters(1))
     }
   }
 
-  class OpCodeTwo extends OpCode(4) {
+  class OpCodeTwo extends OpCode(3) {
     override def process(): Unit = {
       memory(parameters(2)) = memory(parameters(0)) * memory(parameters(1))
     }
@@ -77,7 +83,7 @@ class IntcodeComputer(initialMemory: List[Int]) {
 
   class OpCodeFour() extends OpCode(1) {
     override def process(): Unit = {
-      println(memory(parameters.head))
+      outputs.addOne(memory(parameters.head))
     }
   }
 }
