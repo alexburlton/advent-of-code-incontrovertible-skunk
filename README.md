@@ -1,2 +1,2 @@
-# advent-of-code-year-of-the-periodic-table
-2019 advent of code solutions
+# Advent of Code 2019
+Scala solutions to https://adventofcode.com/2019
