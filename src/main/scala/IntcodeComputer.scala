@@ -1,9 +1,12 @@
 import scala.collection.mutable.ListBuffer
 
-class IntcodeComputer(initialMemory: List[Int], private val input: Int = 1) {
+class IntcodeComputer(initialMemory: List[Int], private val inputs: List[Int] = List()) {
   private val memory: ListBuffer[Int] = initialiseMemory(initialMemory)
   private var instructionPointer: Int = 0
+  private var inputPointer: Int = 0
   private var terminate = false
+
+
   val outputs: ListBuffer[Int] = new ListBuffer[Int]()
 
   private def initialiseMemory(initialMemory: List[Int]): ListBuffer[Int] = {
@@ -39,7 +42,7 @@ class IntcodeComputer(initialMemory: List[Int], private val input: Int = 1) {
       case 99 => new OpCodeTerminate()
       case  1 => new OpCodeOne(parameterModes)
       case  2 => new OpCodeTwo(parameterModes)
-      case  3 => new OpCodeThree(input, parameterModes)
+      case  3 => new OpCodeThree(parameterModes)
       case  4 => new OpCodeFour(parameterModes)
       case  5 => new OpCodeFive(parameterModes)
       case  6 => new OpCodeSix(parameterModes)
@@ -107,9 +110,10 @@ class IntcodeComputer(initialMemory: List[Int], private val input: Int = 1) {
     }
   }
 
-  sealed class OpCodeThree(val input: Int, rawModes: List[Int]) extends OpCode(1, rawModes) {
+  sealed class OpCodeThree(rawModes: List[Int]) extends OpCode(1, rawModes) {
     override def processImpl(): Unit = {
-      memory(parameters.head) = input
+      memory(parameters.head) = inputs(inputPointer)
+      inputPointer += 1
     }
   }
 
