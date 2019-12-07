@@ -1,19 +1,16 @@
 import scala.collection.mutable.ListBuffer
 
-class IntcodeComputer(initialMemory: List[Int], private val inputs: List[Int] = List()) {
-  private val memory: ListBuffer[Int] = initialiseMemory(initialMemory)
+class IntcodeComputer(initialMemory: List[Int], private val initialInputs: List[Int] = List()) {
+  private val memory: ListBuffer[Int] = initialMemory.to(ListBuffer)
+  private val inputs: ListBuffer[Int] = initialInputs.to(ListBuffer)
+
   private var instructionPointer: Int = 0
   private var inputPointer: Int = 0
-  private var terminate = false
+  var terminate = false
 
+  private var waitingForInput = false
 
   val outputs: ListBuffer[Int] = new ListBuffer[Int]()
-
-  private def initialiseMemory(initialMemory: List[Int]): ListBuffer[Int] = {
-    val list = new ListBuffer[Int]()
-    list.addAll(initialMemory)
-    list
-  }
 
   def makeInitialSubstitution(noun: Int, verb: Int) {
     memory(1) = noun
@@ -21,12 +18,25 @@ class IntcodeComputer(initialMemory: List[Int], private val inputs: List[Int] = 
   }
 
   def process(): List[Int] = {
-    while (!terminate) {
+    while (!terminate && !waitingForInput) {
       val opCode = readOpCode()
       opCode.process()
     }
 
     memory.toList
+  }
+
+  def processWithInput(input: Int): Unit = {
+    waitingForInput = false
+    inputs.addOne(input)
+    process()
+  }
+
+  private def waitForInput(): Unit = {
+    waitingForInput = true
+
+    //Go back so we process the 03 op code again when the program is resumed
+    instructionPointer -= 2
   }
 
   private def readOpCode(): OpCode = {
@@ -56,9 +66,7 @@ class IntcodeComputer(initialMemory: List[Int], private val inputs: List[Int] = 
     private val parameterModes = readParameterModes(rawModes)
 
     def process(): Unit = {
-      //println(s"Processing $getClass: Parameters [$parameters], Raw modes [$rawModes], Parameter modes [$parameterModes]")
       processImpl()
-      //println(s"New memory: $memory")
     }
     def processImpl()
 
@@ -112,8 +120,12 @@ class IntcodeComputer(initialMemory: List[Int], private val inputs: List[Int] = 
 
   sealed class OpCodeThree(rawModes: List[Int]) extends OpCode(1, rawModes) {
     override def processImpl(): Unit = {
-      memory(parameters.head) = inputs(inputPointer)
-      inputPointer += 1
+      if (!inputs.indices.contains(inputPointer)) {
+        waitForInput()
+      } else {
+        memory(parameters.head) = inputs(inputPointer)
+        inputPointer += 1
+      }
     }
   }
 
