@@ -13,11 +13,7 @@ class DayEight extends AbstractPuzzle(8) {
 
     val layerWithMin = layers(ixWithMax)
 
-    layerWithMin.count {
-      _ == '1'
-    } * layerWithMin.count {
-      _ == '2'
-    }
+    layerWithMin.count { _ == '1' } * layerWithMin.count { _ == '2' }
   }
 
   override def partB(): Int = {
