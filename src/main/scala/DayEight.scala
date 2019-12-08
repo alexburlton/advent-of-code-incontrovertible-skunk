@@ -7,12 +7,10 @@ class DayEight extends AbstractPuzzle(8) {
     val layers = parseLayersFromInput()
 
     val zeroCounts = layers.map { layer => layer.count(_ == '0') }
-
     val min = zeroCounts.min
-    val ixWithMax = zeroCounts.indexOf(min)
+    val ixWithMin = zeroCounts.indexOf(min)
 
-    val layerWithMin = layers(ixWithMax)
-
+    val layerWithMin = layers(ixWithMin)
     layerWithMin.count { _ == '1' } * layerWithMin.count { _ == '2' }
   }
 
@@ -38,9 +36,7 @@ class DayEight extends AbstractPuzzle(8) {
   }
 
   private def parseLayersFromInput(): List[List[Char]] = {
-
     val imagePixels = inputLines.head.toList
-
     imagePixels.grouped(layerSize).toList
   }
 
