@@ -152,11 +152,27 @@ class IntcodeComputerTest extends FlatSpec {
       53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10)) == 18216)
   }
 
-  "9A examples" should "produce example outputs" in {
+  "9A quine example" should "produce itself" in {
     assertInputProducesOutput(List(109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99), List(109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99))
   }
 
-  private def assertInputProducesOutput(input: List[Long], output: List[Int]): Unit = {
-    assert(new IntcodeComputer(input).process() == output)
+  "9A second example" should "output a 16 digit number" in {
+    val computer = new IntcodeComputer(List(1102,34915192,34915192,7,4,7,99,0))
+    computer.process()
+
+    assert(computer.outputs.size == 1)
+    assert(computer.outputs.head.toString.length() == 16)
+  }
+
+  "9A third example" should "output the right value" in {
+    val computer = new IntcodeComputer(List(104,1125899906842624L,99))
+    computer.process()
+
+    assert(computer.outputs.size == 1)
+    assert(computer.outputs.head == 1125899906842624L)
+  }
+
+  private def assertInputProducesOutput(input: List[Long], output: List[Long]): Unit = {
+    assert(new IntcodeComputer(input).process().slice(0, output.size) == output)
   }
 }
