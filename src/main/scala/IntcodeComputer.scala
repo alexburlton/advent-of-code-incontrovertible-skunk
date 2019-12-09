@@ -1,23 +1,47 @@
 import scala.collection.mutable.ListBuffer
 
-class IntcodeComputer(initialMemory: List[Int], private val initialInputs: List[Int] = List()) {
-  private val memory: ListBuffer[Int] = initialMemory.to(ListBuffer)
-  private val inputs: ListBuffer[Int] = initialInputs.to(ListBuffer)
+class IntcodeComputer(initialMemory: List[Long], private val initialInputs: List[Long] = List()) {
+  private val memory: ListBuffer[Long] = initialMemory.to(ListBuffer)
+  private val inputs: ListBuffer[Long] = initialInputs.to(ListBuffer)
 
-  private var instructionPointer: Int = 0
+  private var instructionPointer: Long = 0
   private var inputPointer: Int = 0
   var terminate = false
 
   private var waitingForInput = false
+  private var relativeBase: Int = 0
 
-  val outputs: ListBuffer[Int] = new ListBuffer[Int]()
+  val outputs: ListBuffer[Long] = new ListBuffer[Long]()
+
+  private def readMemory(index: Int): Long = {
+    if (index >= memory.size) {
+      padMemory(index)
+    }
+
+    memory(index)
+  }
+
+  private def writeMemory(index: Int, valueToWrite: Long): Unit = {
+    if (index >= memory.size) {
+      padMemory(index)
+    }
+
+    memory(index) = valueToWrite
+  }
+
+  private def padMemory(index: Int) = {
+    val difference = index - memory.size + 1
+
+    val zeros = List.fill(difference)(0L)
+    memory.addAll(zeros)
+  }
 
   def makeInitialSubstitution(noun: Int, verb: Int) {
     memory(1) = noun
     memory(2) = verb
   }
 
-  def process(): List[Int] = {
+  def process(): List[Long] = {
     while (!terminate && !waitingForInput) {
       val opCode = readOpCode()
       opCode.process()
@@ -26,7 +50,7 @@ class IntcodeComputer(initialMemory: List[Int], private val initialInputs: List[
     memory.toList
   }
 
-  def processWithInput(input: Int): Unit = {
+  def processWithInput(input: Long): Unit = {
     waitingForInput = false
     inputs.addOne(input)
     process()
@@ -40,7 +64,7 @@ class IntcodeComputer(initialMemory: List[Int], private val initialInputs: List[
   }
 
   private def readOpCode(): OpCode = {
-    val instruction = memory(instructionPointer)
+    val instruction = readMemory(instructionPointer.toInt)
     instructionPointer += 1
 
     val code = instruction % 100
@@ -58,6 +82,7 @@ class IntcodeComputer(initialMemory: List[Int], private val initialInputs: List[
       case  6 => new OpCodeSix()
       case  7 => new OpCodeSeven()
       case  8 => new OpCodeEight()
+      case  9 => new OpCodeNine()
     }
 
     opCode.readParameterModes(parameterModes)
@@ -65,7 +90,7 @@ class IntcodeComputer(initialMemory: List[Int], private val initialInputs: List[
   }
 
   sealed abstract class OpCode(val paramCount: Int) {
-    protected val parameters: List[Int] = readParameters()
+    protected val parameters: List[Long] = readParameters()
     private val parameterModes = ListBuffer[Int]()
 
     def process(): Unit = {
@@ -73,18 +98,25 @@ class IntcodeComputer(initialMemory: List[Int], private val initialInputs: List[
     }
     def processImpl()
 
-    def getParameter(index: Int): Int = {
+    def getParameter(index: Int): Long = {
       val mode = parameterModes(index)
 
       if (mode == 1) parameters(index)
-      else memory(parameters(index))
+      else if (mode == 2) readMemory(parameters(index).toInt + relativeBase)
+      else readMemory(parameters(index).toInt)
     }
 
+    def getPositionForWriting(index: Int): Int = {
+      val mode = parameterModes(index)
 
-    private def readParameters(): List[Int] = {
-      val buffer = new ListBuffer[Int]()
+      if (mode == 2) parameters(index).toInt + relativeBase
+      else parameters(index).toInt
+    }
+
+    private def readParameters(): List[Long] = {
+      val buffer = new ListBuffer[Long]()
       for (_ <- 0 until paramCount) {
-        buffer.addOne(memory(instructionPointer))
+        buffer.addOne(readMemory(instructionPointer.toInt))
         instructionPointer += 1
       }
 
@@ -108,13 +140,13 @@ class IntcodeComputer(initialMemory: List[Int], private val initialInputs: List[
 
   sealed class OpCodeOne() extends OpCode(3) {
     override def processImpl(): Unit = {
-      memory(parameters(2)) = getParameter(0) + getParameter(1)
+      writeMemory(getPositionForWriting(2), getParameter(0) + getParameter(1))
     }
   }
 
   sealed class OpCodeTwo() extends OpCode(3) {
     override def processImpl(): Unit = {
-      memory(parameters(2)) = getParameter(0) * getParameter(1)
+      writeMemory(getPositionForWriting(2), getParameter(0) * getParameter(1))
     }
   }
 
@@ -123,7 +155,7 @@ class IntcodeComputer(initialMemory: List[Int], private val initialInputs: List[
       if (!inputs.indices.contains(inputPointer)) {
         waitForInput()
       } else {
-        memory(parameters.head) = inputs(inputPointer)
+        writeMemory(getPositionForWriting(0), inputs(inputPointer))
         inputPointer += 1
       }
     }
@@ -157,7 +189,7 @@ class IntcodeComputer(initialMemory: List[Int], private val initialInputs: List[
     override def processImpl(): Unit = {
       val param = getParameter(0)
       val param2 = getParameter(1)
-      memory(parameters(2)) = if (param < param2) 1 else 0
+      writeMemory(getPositionForWriting(2), if (param < param2) 1 else 0)
     }
   }
 
@@ -165,7 +197,13 @@ class IntcodeComputer(initialMemory: List[Int], private val initialInputs: List[
     override def processImpl(): Unit = {
       val param = getParameter(0)
       val param2 = getParameter(1)
-      memory(parameters(2)) = if (param == param2) 1 else 0
+      writeMemory(getPositionForWriting(2), if (param == param2) 1 else 0)
+    }
+  }
+
+  sealed class OpCodeNine() extends OpCode(1) {
+    override def processImpl(): Unit = {
+      relativeBase += getParameter(0).toInt
     }
   }
 }

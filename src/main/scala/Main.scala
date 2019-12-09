@@ -1,7 +1,6 @@
 
 object Main {
-  def days: List[AbstractPuzzle] = List(new DayOne(), new DayTwo(), new DayThree(), new DayFour(), new DayFive(),
-    new DaySix(), new DaySeven(), new DayEight())
+  def days: List[AbstractPuzzle] = List(new DayNine())
 
   def main(args: Array[String]): Unit = {
     days.foreach { _.run() }

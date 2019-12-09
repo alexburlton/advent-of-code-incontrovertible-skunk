@@ -6,6 +6,6 @@ abstract class AbstractPuzzle(day: Int) {
     println(s"${day}B: ${partB()}")
   }
 
-  def partA(): Int
-  def partB(): Int
+  def partA(): Any
+  def partB(): Any
 }

@@ -2,9 +2,9 @@
 
 class DayTwo extends AbstractPuzzle(2) {
 
-  val inputCommands: List[Int] = inputLines.head.split(",").map(s => s.toInt).toList
+  val inputCommands: List[Long] = inputLines.head.split(",").map(s => s.toLong).toList
 
-  override def partA(): Int = {
+  override def partA(): Long = {
     val computer = new IntcodeComputer(inputCommands)
     computer.makeInitialSubstitution(12, 2)
     computer.process().head
@@ -12,7 +12,7 @@ class DayTwo extends AbstractPuzzle(2) {
 
   override def partB(): Int = findNounAndVerbForOutput(inputCommands, 19690720)
 
-  def findNounAndVerbForOutput(commands: List[Int], output: Int): Int = {
+  def findNounAndVerbForOutput(commands: List[Long], output: Int): Int = {
     for (noun <- 0 to 99) {
       for (verb <- 0 to 99) {
         val computer = new IntcodeComputer(inputCommands)

@@ -152,7 +152,11 @@ class IntcodeComputerTest extends FlatSpec {
       53,1001,56,-1,56,1005,56,6,99,0,0,0,0,10)) == 18216)
   }
 
-  private def assertInputProducesOutput(input: List[Int], output: List[Int]): Unit = {
+  "9A examples" should "produce example outputs" in {
+    assertInputProducesOutput(List(109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99), List(109,1,204,-1,1001,100,1,100,1008,100,16,101,1006,101,0,99))
+  }
+
+  private def assertInputProducesOutput(input: List[Long], output: List[Int]): Unit = {
     assert(new IntcodeComputer(input).process() == output)
   }
 }
