@@ -2,7 +2,7 @@ import org.scalatest.FlatSpec
 
 class DaySixTest extends FlatSpec {
   "6A example" should "be correct" in {
-    val lines = AdventUtils.readFile("Day6AExample")
+    val lines = AdventUtils.readFile("testInputs/Day6AExample")
     val dag = DaySixHelpers.constructDag(lines)
 
     assert(dag.getAllChildren("D").size == 3)
@@ -12,7 +12,7 @@ class DaySixTest extends FlatSpec {
   }
 
   "6B example" should "be correct" in {
-    val lines = AdventUtils.readFile("Day6BExample")
+    val lines = AdventUtils.readFile("testInputs/Day6BExample")
     val dag = DaySixHelpers.constructDag(lines)
 
     assert(dag.getShortestPathBetween("YOU", "SAN") == 4)

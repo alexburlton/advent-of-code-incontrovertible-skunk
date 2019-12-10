@@ -3,58 +3,51 @@ import java.awt.Point
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 
-class DayTen extends AbstractPuzzle(10) {
-  class AsteroidData(val centerPt: Point, val hmAngleToPoints: Map[Double, List[Point]]) {
-    def countPointsVisibleFromCenter(): Int = hmAngleToPoints.size
+class AsteroidData(val centerPt: Point, val hmAngleToPoints: Map[Double, List[Point]]) {
+  def countPointsVisibleFromCenter(): Int = hmAngleToPoints.size
 
-    def getAllAnglesSorted: List[Double] = hmAngleToPoints.keys.toList.sortBy { angle => angle }
+  def getAllAnglesSorted: List[Double] = hmAngleToPoints.keys.toList.sortBy { angle => angle }
 
-    def getAsteroidShootingOrder: List[Point] = {
-      val shotAsteroids = ListBuffer[Point]()
+  def getAsteroidShootingOrder: List[Point] = {
+    val shotAsteroids = ListBuffer[Point]()
 
-      val sortedAngles = getAllAnglesSorted
-      val mutableMap = hmAngleToPoints.to(mutable.HashMap)
+    val sortedAngles = getAllAnglesSorted
+    val mutableMap = hmAngleToPoints.to(mutable.HashMap)
 
-      while (mutableMap.values.flatten[Point].nonEmpty) {
-        sortedAngles.foreach { angle =>
-          val pts = mutableMap(angle)
-          if (pts.nonEmpty) {
-            val sortedPoints = pts.sortBy(DayTenHelpers.getDistanceBetweenPoints(centerPt, _))
-            val newPoints = sortedPoints.to(ListBuffer)
-            val asteroidVaporized = newPoints.remove(0)
+    while (mutableMap.values.flatten[Point].nonEmpty) {
+      sortedAngles.foreach { angle =>
+        val pts = mutableMap(angle)
+        if (pts.nonEmpty) {
+          val sortedPoints = pts.sortBy(DayTenHelpers.getDistanceBetweenPoints(centerPt, _))
+          val newPoints = sortedPoints.to(ListBuffer)
+          val asteroidVaporized = newPoints.remove(0)
 
-            shotAsteroids.addOne(asteroidVaporized)
+          shotAsteroids.addOne(asteroidVaporized)
 
-            mutableMap(angle) = newPoints.toList
-          }
+          mutableMap(angle) = newPoints.toList
         }
       }
-
-      shotAsteroids.toList
     }
-  }
 
+    shotAsteroids.toList
+  }
+}
+
+class DayTen extends AbstractPuzzle(10) {
   override def partA(): Any = {
-    val pts = DayTenHelpers.getAsteroidPoints(inputLines)
-    pts.map(pt => constructAsteroidData(pt, pts).countPointsVisibleFromCenter()).max
+    val bestAsteroid = DayTenHelpers.getBestCenterAsteroid(inputLines)
+    bestAsteroid.countPointsVisibleFromCenter()
   }
 
   override def partB(): Any = {
-    val pts = DayTenHelpers.getAsteroidPoints(inputLines)
-    val asteroidDatas = pts.map(pt => constructAsteroidData(pt, pts))
-
-    val bestAsteroid = asteroidDatas.maxBy(_.hmAngleToPoints.size)
+    val bestAsteroid = DayTenHelpers.getBestCenterAsteroid(inputLines)
 
     val shotAsteroids = bestAsteroid.getAsteroidShootingOrder
-    shotAsteroids(199)
-  }
-
-  private def constructAsteroidData(centerPt: Point, allPoints: List[Point]): AsteroidData = {
-    val allOtherPoints = allPoints.filterNot(_ == centerPt)
-    val hmAngleToPoints = allOtherPoints.groupBy(pt => DayTenHelpers.getAngleForPoint(pt, centerPt))
-    new AsteroidData(centerPt, hmAngleToPoints)
+    val pt = shotAsteroids(199)
+    100 * pt.x + pt.y
   }
 }
+
 object DayTenHelpers {
   private val TOP_RIGHT = new Quadrant(0, 90, true, yIsPositive = false)
   private val BOTTOM_RIGHT = new Quadrant(90, 180, true, yIsPositive = true)
@@ -65,6 +58,19 @@ object DayTenHelpers {
 
   class Quadrant(val minimumAngle: Int, val maximumAngle: Int, val xIsPositive: Boolean, val yIsPositive: Boolean) {
     val sinForX: Boolean = xIsPositive ^ yIsPositive
+  }
+
+  def getBestCenterAsteroid(inputLines: List[String]): AsteroidData = {
+    val pts = getAsteroidPoints(inputLines)
+    val asteroidDatas = pts.map(pt => constructAsteroidData(pt, pts))
+
+    asteroidDatas.maxBy(_.countPointsVisibleFromCenter())
+  }
+
+  private def constructAsteroidData(centerPt: Point, allPoints: List[Point]): AsteroidData = {
+    val allOtherPoints = allPoints.filterNot(_ == centerPt)
+    val hmAngleToPoints = allOtherPoints.groupBy(pt => DayTenHelpers.getAngleForPoint(pt, centerPt))
+    new AsteroidData(centerPt, hmAngleToPoints)
   }
 
   def getAngleForPoint(dartPt: Point, centerPt: Point): Double = {
