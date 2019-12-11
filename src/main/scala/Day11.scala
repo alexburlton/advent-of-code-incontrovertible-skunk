@@ -4,7 +4,7 @@ import scala.collection.mutable.ListBuffer
 
 class Day11 extends AbstractPuzzle(11) {
 
-  val inputCommands: List[Long] = inputLines.head.split(",").map(s => s.toLong).toList
+  val inputCommands: List[Long] = AdventUtils.parseAsIntcodeInput(inputLines)
 
   override def partA(): Any = {
     val robot = new PaintingRobot(inputCommands, 0)
@@ -16,20 +16,10 @@ class Day11 extends AbstractPuzzle(11) {
   override def partB(): Any = {
     val robot = new PaintingRobot(inputCommands, 1)
     robot.run()
-
-    val pts = robot.hmPointToColour.keys
-
-    val xMin = pts.minBy(_.x).x
-    val xMax = pts.maxBy(_.x).x
-    val yMin = pts.minBy(_.y).y
-    val yMax = pts.maxBy(_.y).y
-
-    val yRange = yMax to yMin by -1
-
-
-    for (y <- yRange) {
+    
+    for (y <- robot.getYRange) {
       val row = ListBuffer[String]()
-      for (x <- xMin to xMax) {
+      for (x <- robot.getXRange) {
         val colour = robot.getColour(new Point(x, y))
         val colourStr = if (colour == 0) "." else "#"
         row.addOne(colourStr)

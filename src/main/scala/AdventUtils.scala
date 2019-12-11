@@ -7,5 +7,7 @@ object AdventUtils {
     src.close
     list
   }
+
+  def parseAsIntcodeInput(inputLines: List[String]): List[Long] = inputLines.head.split(",").map(s => s.toLong).toList
 }
 

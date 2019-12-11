@@ -1,5 +1,5 @@
 class DayNine extends AbstractPuzzle(9) {
-  val inputCommands: List[Long] = inputLines.head.split(",").map(s => s.toLong).toList
+  val inputCommands: List[Long] = AdventUtils.parseAsIntcodeInput(inputLines)
 
   override def partA(): Long = {
     val computer = new IntcodeComputer(inputCommands, List(1))

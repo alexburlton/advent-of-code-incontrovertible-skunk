@@ -45,6 +45,22 @@ class PaintingRobot(initialMemory: List[Long], initialColour: Int) {
 
   def getColour(pt: Point): Int = hmPointToColour.getOrElse(pt, 0)
 
+  def getXRange: Range = {
+    val pts = hmPointToColour.keys
+    val xMin = pts.minBy(_.x).x
+    val xMax = pts.maxBy(_.x).x
+
+    xMin to xMax
+  }
+
+  def getYRange: Range = {
+    val pts = hmPointToColour.keys
+    val yMin = pts.minBy(_.y).y
+    val yMax = pts.maxBy(_.y).y
+
+    yMin to yMax
+  }
+
   private def doTurn(turnDirection: Int): Unit = {
     if (turnDirection == 0) {
       direction = direction match {
@@ -65,8 +81,8 @@ class PaintingRobot(initialMemory: List[Long], initialColour: Int) {
 
   private def moveToNewPosition(): Unit = {
     currentPt = direction match {
-      case Direction.UP => new Point(currentPt.x, currentPt.y + 1)
-      case Direction.DOWN => new Point(currentPt.x, currentPt.y - 1)
+      case Direction.UP => new Point(currentPt.x, currentPt.y - 1)
+      case Direction.DOWN => new Point(currentPt.x, currentPt.y + 1)
       case Direction.RIGHT => new Point(currentPt.x + 1, currentPt.y)
       case Direction.LEFT => new Point(currentPt.x - 1, currentPt.y)
     }
