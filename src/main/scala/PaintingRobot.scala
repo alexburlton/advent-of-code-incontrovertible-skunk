@@ -1,20 +1,12 @@
 import java.awt.Point
-
-import Direction.Direction
-
 import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
-
-object Direction extends Enumeration {
-  type Direction = Value
-  val UP, DOWN, LEFT, RIGHT = Value
-}
 
 class PaintingRobot(initialMemory: List[Long], initialColour: Int) {
   val computer = new IntcodeComputer(initialMemory)
 
   val pointsVisited: ListBuffer[Point] = ListBuffer[Point]()
-  var direction: Direction = Direction.UP
+  var direction: Point = new Point(0, -1) //Up
   var currentPt: Point = new Point(0, 0)
   var outputPointer = 0
 
@@ -61,30 +53,14 @@ class PaintingRobot(initialMemory: List[Long], initialColour: Int) {
     yMin to yMax
   }
 
-  private def doTurn(turnDirection: Int): Unit = {
-    if (turnDirection == 0) {
-      direction = direction match {
-        case Direction.UP => Direction.LEFT
-        case Direction.LEFT => Direction.DOWN
-        case Direction.DOWN => Direction.RIGHT
-        case Direction.RIGHT => Direction.UP
-      }
-    } else {
-      direction = direction match {
-        case Direction.UP => Direction.RIGHT
-        case Direction.RIGHT => Direction.DOWN
-        case Direction.DOWN => Direction.LEFT
-        case Direction.LEFT => Direction.UP
-      }
+  private def doTurn(turnDirection: Int) {
+    direction = turnDirection match {
+      case 0 => new Point(direction.y, -direction.x)
+      case 1 => new Point(-direction.y, direction.x)
     }
   }
 
   private def moveToNewPosition(): Unit = {
-    currentPt = direction match {
-      case Direction.UP => new Point(currentPt.x, currentPt.y - 1)
-      case Direction.DOWN => new Point(currentPt.x, currentPt.y + 1)
-      case Direction.RIGHT => new Point(currentPt.x + 1, currentPt.y)
-      case Direction.LEFT => new Point(currentPt.x - 1, currentPt.y)
-    }
+    currentPt = new Point(currentPt.x + direction.x, currentPt.y + direction.y)
   }
 }

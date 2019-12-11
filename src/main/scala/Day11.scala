@@ -16,7 +16,7 @@ class Day11 extends AbstractPuzzle(11) {
   override def partB(): Any = {
     val robot = new PaintingRobot(inputCommands, 1)
     robot.run()
-    
+
     for (y <- robot.getYRange) {
       val row = ListBuffer[String]()
       for (x <- robot.getXRange) {
