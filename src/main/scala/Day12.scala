@@ -6,12 +6,10 @@ class Day12 extends AbstractPuzzle(12) {
   override def partA(): Any = {
     val moons = inputLines.map { line => new Moon(line) }
 
-    var numberOfSteps: Long = 0
-    while (numberOfSteps < 10) {
+    for (_ <- 0 until 1000) {
       updateVelocities(moons)
 
       moons.foreach { moon => moon.applyVelocity() }
-      numberOfSteps += 1
     }
 
     moons.map { _.getTotalEnergy }.sum
@@ -24,8 +22,6 @@ class Day12 extends AbstractPuzzle(12) {
 
     getLcm(xRepeat, yRepeat, zRepeat)
   }
-
-
 
   private def updateVelocities(moons: List[Moon]): Unit = {
     for {
@@ -47,6 +43,7 @@ class Day12 extends AbstractPuzzle(12) {
     val factorsOfLcm = allPrimeFactors.map[Long] { factor => Math.pow(factor, getMaxCount(factor, xFactors, yFactors, zFactors)).toInt }
     factorsOfLcm.product
   }
+
   @tailrec
   private def factorize(x: Long, prime: Long = 2, map: mutable.HashMap[Long, Int] = mutable.HashMap()): mutable.HashMap[Long, Int] = {
     if (prime * prime > x) {
