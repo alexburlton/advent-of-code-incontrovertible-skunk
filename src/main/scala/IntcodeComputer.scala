@@ -13,12 +13,28 @@ class IntcodeComputer(initialMemory: List[Long], private val initialInputs: List
 
   val outputs: ListBuffer[Long] = new ListBuffer[Long]()
 
+  def copy(): IntcodeComputer = {
+    val newComputer = new IntcodeComputer(memory.toList, inputs.toList)
+    newComputer.instructionPointer = this.instructionPointer
+    newComputer.inputPointer = this.inputPointer
+    newComputer.terminate = this.terminate
+    newComputer.waitingForInput = this.waitingForInput
+    newComputer.relativeBase = this.relativeBase
+    newComputer.outputs.addAll(this.outputs)
+
+    newComputer
+  }
+
   private def readMemory(index: Int): Long = {
     if (index >= memory.size) {
       padMemory(index)
     }
 
     memory(index)
+  }
+
+  def clearOutputs(): Unit = {
+    outputs.clear()
   }
 
   private def writeMemory(index: Int, valueToWrite: Long): Unit = {
@@ -34,6 +50,10 @@ class IntcodeComputer(initialMemory: List[Long], private val initialInputs: List
 
     val zeros = List.fill(difference)(0L)
     memory.addAll(zeros)
+  }
+
+  def substituteValue(position: Int, value: Int): Unit = {
+    memory(position) = value
   }
 
   def makeInitialSubstitution(noun: Int, verb: Int) {
