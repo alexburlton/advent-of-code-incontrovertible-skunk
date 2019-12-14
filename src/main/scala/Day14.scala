@@ -1,36 +1,23 @@
 import scala.collection.mutable
 
+case class ElementAndQuantity(quantity: Long, element: String) {
+  override def toString: String = s"$quantity x $element"
+}
+case class Reaction(product: ElementAndQuantity, units: List[ElementAndQuantity])
+
 class Day14 extends AbstractPuzzle(14) {
-  val map: mutable.HashMap[String, Reaction] = constructMap()
+  val map: mutable.HashMap[String, Reaction] = Day14Helpers.constructMap(inputLines)
 
   override def partA(): Any = {
-    getOreToProduceFuel(1)
+    Day14Helpers.getOreToProduceFuel(1, map)
   }
 
   override def partB(): Any = {
-    val ore = getOreToProduceFuel(4200533)
-
-    ore
+    Day14Helpers.findFuelProducedByOneTrillionOre(map)
   }
-
-  private def getOreToProduceFuel(fuelAmount: Long) = {
-    val firstStep = map("FUEL")
-    var requirements = firstStep.units.map { it => ElementAndQuantity(it.quantity * fuelAmount, it.element) }
-    var spares = List[ElementAndQuantity]()
-    while (!requirements.forall(it => it.element == "ORE")) {
-      val (reducedRequirements, stillSpare) = useUpSpares(requirements, spares)
-
-      val newRequirements = reducedRequirements.flatMap { it => getMinimumRequirements(it)._1 }
-      val additionalSpares = reducedRequirements.map { it => ElementAndQuantity(getMinimumRequirements(it)._2, it.element) }
-
-      requirements = combineLikeElements(newRequirements)
-      spares = combineLikeElements(stillSpare ++ additionalSpares)
-    }
-
-    requirements.map { it => it.quantity }.sum
-  }
-
-  private def constructMap(): mutable.HashMap[String, Reaction] = {
+}
+object Day14Helpers {
+  def constructMap(inputLines: List[String]): mutable.HashMap[String, Reaction] = {
     val map = mutable.HashMap[String, Reaction]()
 
     inputLines.foreach { line =>
@@ -45,12 +32,30 @@ class Day14 extends AbstractPuzzle(14) {
     map
   }
 
+  def getOreToProduceFuel(fuelAmount: Long, map: mutable.HashMap[String, Reaction]): Long = {
+    val firstStep = map("FUEL")
+    var requirements = firstStep.units.map { it => ElementAndQuantity(it.quantity * fuelAmount, it.element) }
+    var spares = List[ElementAndQuantity]()
+
+    while (!requirements.forall(it => it.element == "ORE")) {
+      val (reducedRequirements, stillSpare) = useUpSpares(requirements, spares)
+
+      val newRequirements = reducedRequirements.flatMap { it => getMinimumRequirements(it, map)._1 }
+      val additionalSpares = reducedRequirements.map { it => ElementAndQuantity(getMinimumRequirements(it, map)._2, it.element) }
+
+      requirements = combineLikeElements(newRequirements)
+      spares = combineLikeElements(stillSpare ++ additionalSpares)
+    }
+
+    requirements.map { it => it.quantity }.sum
+  }
+
   private def parseElementAndQuantity(str: String): ElementAndQuantity = {
     val quantityAndElement = str.split(" ")
     ElementAndQuantity(quantityAndElement.head.toInt, quantityAndElement(1))
   }
 
-  private def getMinimumRequirements(elementAndQuantity: ElementAndQuantity): (List[ElementAndQuantity], Long) = {
+  def getMinimumRequirements(elementAndQuantity: ElementAndQuantity, map: mutable.HashMap[String, Reaction]): (List[ElementAndQuantity], Long) = {
     if (elementAndQuantity.element == "ORE") {
       return (List(elementAndQuantity), 0)
     }
@@ -60,7 +65,7 @@ class Day14 extends AbstractPuzzle(14) {
     val productProduced = reaction.product.quantity
     val productNeeded = elementAndQuantity.quantity
 
-    val numberOfReactionsNeeded = Math.ceil(productNeeded.toDouble / productProduced.toDouble).toInt
+    val numberOfReactionsNeeded = Math.ceil(productNeeded.toDouble / productProduced.toDouble).toLong
 
     val requiredStuff = reaction.units.map { it => ElementAndQuantity(it.quantity * numberOfReactionsNeeded, it.element) }
     val spareProductProduced = (productProduced * numberOfReactionsNeeded) - productNeeded
@@ -77,8 +82,7 @@ class Day14 extends AbstractPuzzle(14) {
     }.toList
   }
 
-  private def useUpSpares(
-                           requirements: List[ElementAndQuantity],
+  private def useUpSpares(requirements: List[ElementAndQuantity],
                            spares: List[ElementAndQuantity]): (List[ElementAndQuantity], List[ElementAndQuantity]) = {
     val newSpares = spares.map { it =>
       val required = requirements.find { req => req.element == it.element }.orNull
@@ -101,6 +105,40 @@ class Day14 extends AbstractPuzzle(14) {
     (newRequirements, newSpares)
   }
 
-  case class ElementAndQuantity(quantity: Long, element: String)
-  case class Reaction(product: ElementAndQuantity, units: List[ElementAndQuantity])
+  /**
+   * Part B
+   *
+   * Find how much ore produces 1,000,000 fuel, compare to
+   */
+  def findFuelProducedByOneTrillionOre(map: mutable.HashMap[String, Reaction]): Long = {
+    var fuel = 1000000000000L / getOreToProduceFuel(1, map)
+
+    var ore = Day14Helpers.getOreToProduceFuel(fuel, map)
+    var increment = fuel / 2
+
+    var previousDiff = 1000000000000L
+    var diff = 1000000000000L - ore
+
+    while (increment > 1) {
+      if ((previousDiff compare 0) != (diff compare 0)) {
+        increment = Math.ceil(increment.toDouble / 2).toInt
+      }
+
+      if (diff > 0) {
+        fuel += increment
+      } else {
+        fuel -= increment
+      }
+
+      previousDiff = diff
+      ore = Day14Helpers.getOreToProduceFuel(fuel, map)
+      diff = 1000000000000L - ore
+    }
+
+    if (ore > 1000000000000L) {
+      fuel - 1
+    } else {
+      fuel
+    }
+  }
 }
