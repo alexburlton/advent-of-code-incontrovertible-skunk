@@ -108,6 +108,29 @@ class Day15 extends AbstractPuzzle(15) {
       }
     }
 
+    var ticks = 0
+    while (hmPointToType.values.count(_ == ".") > 0) {
+      val newMap = mutable.HashMap[Point, String]()
+      newMap.addAll(hmPointToType)
+      val oxygenPoints = newMap.filterInPlace { (_: Point, str: String) => str == "X" }.keys.toList
+
+      val nextPoints = oxygenPoints.flatMap { getNeighbours }
+      nextPoints.foreach { pt =>
+        val current = hmPointToType.getOrElse(pt, " ")
+        if (current == ".") {
+          hmPointToType.put(pt, "X")
+        }
+      }
+
+      ticks += 1
+    }
+
     printGrid(hmPointToType)
+    ticks
+    //WTF WHY SCALA
+    //hmPointToType.filter { (_: Point, str: String) => str == "X" }
+  }
+  private def getNeighbours(point: Point): List[Point] = {
+    List(getNextPosition(point, 1), getNextPosition(point, 2), getNextPosition(point, 3), getNextPosition(point, 4))
   }
 }
