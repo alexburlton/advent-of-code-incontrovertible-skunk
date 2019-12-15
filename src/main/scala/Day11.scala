@@ -17,15 +17,7 @@ class Day11 extends AbstractPuzzle(11) {
     val robot = new PaintingRobot(inputCommands, 1)
     robot.run()
 
-    for (y <- robot.getYRange) {
-      val row = ListBuffer[String]()
-      for (x <- robot.getXRange) {
-        val colour = robot.getColour(new Point(x, y))
-        val colourStr = if (colour == 0) "." else "#"
-        row.addOne(colourStr)
-      }
-
-      println(row.mkString(""))
-    }
+    val map = robot.getColourMap
+    AdventUtils.printCoordinateGrid(map, ".")
   }
 }

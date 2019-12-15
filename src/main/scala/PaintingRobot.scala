@@ -35,23 +35,11 @@ class PaintingRobot(initialMemory: List[Long], initialColour: Int) {
 
   def countPointsPainted(): Int = hmPointToColour.size
 
+  def getColourMap: Map[Point, String] = {
+    hmPointToColour.view.mapValues { col: Int => getColourStr(col) }.toMap
+  }
   def getColour(pt: Point): Int = hmPointToColour.getOrElse(pt, 0)
-
-  def getXRange: Range = {
-    val pts = hmPointToColour.keys
-    val xMin = pts.minBy(_.x).x
-    val xMax = pts.maxBy(_.x).x
-
-    xMin to xMax
-  }
-
-  def getYRange: Range = {
-    val pts = hmPointToColour.keys
-    val yMin = pts.minBy(_.y).y
-    val yMax = pts.maxBy(_.y).y
-
-    yMin to yMax
-  }
+  def getColourStr(colour: Int): String = if (colour == 0) "." else "'"
 
   private def doTurn(turnDirection: Int) {
     direction = turnDirection match {

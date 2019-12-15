@@ -1,11 +1,10 @@
 import java.awt.Point
 
 import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
 import scala.util.Random
 
 class Day13 extends AbstractPuzzle(13) {
-  val intcode = AdventUtils.parseAsIntcodeInput(inputLines)
+  val intcode: List[Long] = AdventUtils.parseAsIntcodeInput(inputLines)
 
   override def partA(): Any = {
     val computer = new IntcodeComputer(intcode)
@@ -132,31 +131,10 @@ class Day13 extends AbstractPuzzle(13) {
         }
       }
     }
-
-    private def printGrid(): Unit = {
-      val allPoints = tileStates.keys
-      val xRange = allPoints.minBy(_.x).x to allPoints.maxBy(_.x).x
-      val yRange = allPoints.minBy(_.y).y to allPoints.maxBy(_.y).y
-
-      for (y <- yRange) {
-        val list = ListBuffer[String]()
-        for (x <- xRange) {
-          val pt = new Point(x, y)
-          val state = tileStates(pt)
-
-          list.addOne(state.getStringRepresentation)
-        }
-
-        val str = list.mkString
-        println(str)
-      }
-
-      println(s"Score: $score")
-    }
   }
 
   case class TileState(point: Point, tileType: Long) {
-    def getStringRepresentation: String = {
+    override def toString: String = {
       tileType match {
         case 0 => " "
         case 1 => "@"
