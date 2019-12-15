@@ -38,8 +38,7 @@ class PaintingRobot(initialMemory: List[Long], initialColour: Int) {
   def getColourMap: Map[Point, String] = {
     hmPointToColour.view.mapValues { col: Int => getColourStr(col) }.toMap
   }
-  def getColour(pt: Point): Int = hmPointToColour.getOrElse(pt, 0)
-  def getColourStr(colour: Int): String = if (colour == 0) "." else "'"
+  private def getColourStr(colour: Int): String = if (colour == 0) "." else "'"
 
   private def doTurn(turnDirection: Int) {
     direction = turnDirection match {
