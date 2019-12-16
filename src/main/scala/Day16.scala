@@ -1,19 +1,33 @@
 import scala.collection.mutable.ListBuffer
 
 class Day16 extends AbstractPuzzle(16) {
-  val inputList: Vector[Int] = inputLines.head.split("").filter { _.nonEmpty }.map { _.toInt }.toVector
+  val inputList: Vector[Int] = Day16Helpers.getDigitList(inputLines.head)
   val inputPattern: List[Int] = List(0, 1, 0, -1)
   val messageOffset: Int = 5977603
 
   override def partA(): Any = {
-    var list = inputList
-    for (_ <- 0 until 100) {
-      list = runPhase(list)
-    }
-
-    list
+    Day16Helpers.runPhases(inputLines.head, 100)
   }
 
+  override def partB(): Any = {
+    Day16Helpers.runPhasesWithOffset(inputLines.head, 100)
+  }
+}
+
+object Day16Helpers {
+  def getDigitList(digits: String): Vector[Int] = {
+    digits.split("").filter { _.nonEmpty }.map { _.toInt }.toVector
+  }
+
+  def runPhases(digits: String, times: Int): String ={
+    var inputs = getDigitList(digits)
+
+    for (_ <- 0 until times) {
+      inputs = runPhase(inputs)
+    }
+
+    inputs.slice(0, 8).mkString
+  }
   private def runPhase(inputList: Vector[Int]): Vector[Int] = {
     val listBuffer = ListBuffer[Int]()
 
@@ -43,18 +57,19 @@ class Day16 extends AbstractPuzzle(16) {
     Math.abs(sum % 10)
   }
 
-  override def partB(): Any = {
-    val list = Seq.fill(10000)(inputList).flatten.toVector
+  def runPhasesWithOffset(digitStr: String, times: Int): String = {
+    val digits = getDigitList(digitStr)
+    val list = Seq.fill(10000)(digits).flatten.toVector
+    val messageOffset = digitStr.slice(0, 7).mkString.toInt
     var neededDigits = list.slice(messageOffset, list.size - 1)
 
     for (_ <- 0 until 100) {
       neededDigits = runLinearPhase(neededDigits)
     }
 
-    neededDigits.slice(0, 8)
+    neededDigits.slice(0, 8).mkString
   }
-
-  def runLinearPhase(list: Vector[Int]): Vector[Int] = {
+  private def runLinearPhase(list: Vector[Int]): Vector[Int] = {
     val newList = ListBuffer[Int]()
 
     var sum = list.sum
