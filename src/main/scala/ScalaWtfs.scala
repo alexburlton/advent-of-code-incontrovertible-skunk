@@ -1,7 +1,15 @@
 import scala.collection.mutable.ListBuffer
 
 class ScalaWtfs {
-//  def cannotResolveOverloadedMethod(): Unit = {
+  /**
+   * Solutions:
+   *  - Add 'case' to the thing
+   *  - Use tuple => tuple._2 == X
+   *  - val newMap = for {
+   *    (key, value) <- map
+   *    if value == "0" } yield (key, value)
+   */
+  //  def cannotResolveOverloadedMethod(): Unit = {
 //    val map = mutable.HashMap[Int, String]()
 //    map.put(3, "X")
 //    map.put(4, "O")
@@ -10,7 +18,10 @@ class ScalaWtfs {
 //    val filtered = map.filter { (_: Int, value: String) => value == "O" }
 //  }
 
-//  def optionalsAreShit(): Unit = {
+  /**
+   * No smart casting when taking an optional...
+   */
+  //  def optionalsAreShit(): Unit = {
 //    val list: List[Char] = List('^', '>', '<')
 //    val listBuffer = ListBuffer[Char]()
 //
