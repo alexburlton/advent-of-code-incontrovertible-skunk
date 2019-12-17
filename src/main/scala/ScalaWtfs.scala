@@ -1,4 +1,4 @@
-
+import scala.collection.mutable.ListBuffer
 
 class ScalaWtfs {
 //  def cannotResolveOverloadedMethod(): Unit = {
@@ -9,4 +9,15 @@ class ScalaWtfs {
 //
 //    val filtered = map.filter { (_: Int, value: String) => value == "O" }
 //  }
+
+//  def optionalsAreShit(): Unit = {
+//    val list: List[Char] = List('^', '>', '<')
+//    val listBuffer = ListBuffer[Char]()
+//
+//    val direction = findDirection(list).orNull
+//    if (direction != null) {
+//      listBuffer.addOne(direction)
+//    }
+//  }
+//  private def findDirection(list: List[Char]): Option[Char] = list.find { _ == '^' }
 }
