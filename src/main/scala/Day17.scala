@@ -86,6 +86,9 @@ class Day17 extends AbstractPuzzle(17) {
     str.toCharArray.toList.map { _.toLong } ++ List(10)
   }
 
+  /**
+   * TODO - unfold
+   */
   private def generatePath(): Unit = {
     val robot = map.find { case (pt: Point, value: Char) => value == '^' || value == 'v' || value == '<' || value == '>' }.get
 
@@ -103,13 +106,11 @@ class Day17 extends AbstractPuzzle(17) {
       currentPt = applyDirection(currentPt, currentDirection, count)
       val possibleNewDirection = doTurn(currentPt, currentDirection)
 
-      if (possibleNewDirection != null) {
-        val newDirection = possibleNewDirection.asInstanceOf[Char]
-        instructions.addOne(getTurnInstruction(currentDirection, newDirection))
-        currentDirection = newDirection
-      }
-      else {
-        deadEnd = true
+      possibleNewDirection match {
+        case None => deadEnd = true
+        case Some(direction) =>
+          instructions.addOne(getTurnInstruction(currentDirection, direction))
+          currentDirection = direction
       }
     }
   }
@@ -140,13 +141,13 @@ class Day17 extends AbstractPuzzle(17) {
     }
   }
 
-  private def doTurn(pt: Point, direction: Char): Any = {
+  private def doTurn(pt: Point, direction: Char): Option[Char] = {
     val possibleMoves = getOrthogonalDirections(direction)
     possibleMoves.find { dir =>
       val newPt = applyDirection(pt, dir, 1)
       val newTileType = getTileType(newPt)
       newTileType == '#'
-    }.orNull
+    }
   }
 
   private def getTileType(pt: Point): Char = map.getOrElse(pt, '.')
