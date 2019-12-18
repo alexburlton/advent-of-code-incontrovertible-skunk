@@ -63,8 +63,7 @@ class Day18 extends AbstractPuzzle(18) {
   private def iterateMovesUntilAllKeysFound(position: Point, stepsTakenToHere: Int, keysFound: Set[Char]): Int = {
     if (keysFound.size == keyCount) {
       //Found them all!
-      minFoundSoFar = Math.min(minFoundSoFar, stepsTakenToHere)
-      println(s"All keys found in $stepsTakenToHere, new best: $minFoundSoFar")
+      updateMinSoFar(stepsTakenToHere)
       return stepsTakenToHere
     }
 
@@ -90,7 +89,16 @@ class Day18 extends AbstractPuzzle(18) {
       iterateMovesUntilAllKeysFound(move.point, move.stepsAway + stepsTakenToHere, allKeysFound) }.min
 
     hmSituationToSteps.put(situation, minTotalSteps - stepsTakenToHere)
+
+    updateMinSoFar(minTotalSteps)
+
     minTotalSteps
+  }
+  private def updateMinSoFar(totalSteps: Int): Unit = {
+   if (totalSteps < minFoundSoFar) {
+     println(s"New best: $totalSteps")
+     minFoundSoFar = totalSteps
+   }
   }
   private def calculateNextMoves(position: Point, keys: Set[Char]): Vector[PotentialTarget] = {
     val potentialKeys = findAllKeysInRange(position, Set(), keys, 0)
