@@ -6,56 +6,104 @@ import scala.collection.mutable.ListBuffer
 class Day18 extends AbstractPuzzle(18) {
   val map: mutable.HashMap[Point, Char] = readMap()
   val keyCount: Int = map.values.count(_.isLower)
-  var minFoundSoFar: Int = Integer.MAX_VALUE
+  var minFoundSoFar = 5000
+  val hmSituationToSteps: mutable.HashMap[Situation, Int] = mutable.HashMap[Situation, Int]()
+  //3400 is max
 
   override def partA(): Any = {
+    //findASolution()
+
     val startingPosition = map.find { tuple => tuple._2 == '@' }.get._1
 
-    val keysFound = List[Char]()
-    val potentialMoves = calculateNextMoves(startingPosition, keysFound)
-    val doors = findBlockingDoorsInRange(startingPosition, List(), keysFound)
+    val potentialMoves = calculateNextMoves(startingPosition, Set[Char]())
+    //val doors = findBlockingDoorsInRange(startingPosition, List(), keysFound)
+    //val actualMoves = potentialMoves.filter { it => doors.contains(it.key.toUpper) }
 
-    val actualMoves = potentialMoves.filter { it => doors.contains(it.key.toUpper) }
+    //println(s"$potentialMoves")
+    //println(s"Doors are $doors, so only actually going for $acttualMoves")
 
-    println(s"$potentialMoves")
-    println(s"Doors are $doors, so only actually going for $actualMoves")
-
-    val paths = actualMoves.map { move =>
-      iterateMovesUntilAllKeysFound(move.point, move.stepsAway, List(move.key))
+    val paths = potentialMoves.map { move =>
+      iterateMovesUntilAllKeysFound(move.point, move.stepsAway, Set(move.key))
     }
+
+    println(s"$paths")
 
     paths.min
   }
-  private def iterateMovesUntilAllKeysFound(position: Point, stepsTaken: Int, keysFound: List[Char]): Int = {
+
+  private def findASolution(): Unit = {
+    val startingPosition = map.find { tuple => tuple._2 == '@' }.get._1
+
+    var potentialMoves = calculateNextMoves(startingPosition, Set[Char]())
+    val doors = findBlockingDoorsInRange(startingPosition, List(), Set[Char]())
+    var actualMoves = potentialMoves.filter { it => doors.contains(it.key.toUpper) }
+    //var actualMoves = potentialMoves
+
+    val keysFound = mutable.Set[Char]()
+    var stepsTaken = 0
+    while (keysFound.size < keyCount) {
+      val move = actualMoves.minBy(_.stepsAway)
+      keysFound.add(move.key)
+      potentialMoves = calculateNextMoves(move.point, keysFound.toSet)
+
+      val moreDoors = findBlockingDoorsInRange(startingPosition, List(), Set[Char]())
+      actualMoves = potentialMoves.filter { it => moreDoors.contains(it.key.toUpper) }
+
+      if (actualMoves.isEmpty) {
+        actualMoves = potentialMoves
+      }
+      actualMoves = potentialMoves
+
+      stepsTaken += move.stepsAway
+    }
+
+    println(s"Naive strategy gets $stepsTaken")
+    minFoundSoFar = stepsTaken
+  }
+  private def iterateMovesUntilAllKeysFound(position: Point, stepsTakenToHere: Int, keysFound: Set[Char]): Int = {
     if (keysFound.size == keyCount) {
       //Found them all!
-      minFoundSoFar = Math.min(minFoundSoFar, stepsTaken)
-      return stepsTaken
+      minFoundSoFar = Math.min(minFoundSoFar, stepsTakenToHere)
+      println(s"All keys found in $stepsTakenToHere, new best: $minFoundSoFar")
+      return stepsTakenToHere
     }
 
-    if (stepsTaken > minFoundSoFar) {
-      return Integer.MAX_VALUE
+    if (stepsTakenToHere > minFoundSoFar) {
+      //Return some big number so we stop checking this fork
+      //println(s"Taken $stepsTakenToHere - aborting")
+      return stepsTakenToHere  * 10
     }
+
+    val situation = Situation(position, keysFound)
+    val knownStepsFromHere = hmSituationToSteps.get(situation)
+
+    knownStepsFromHere.foreach { it =>
+      //println(s"Know the steps from here, stopping: ${stepsTakenToHere + it}")
+      return stepsTakenToHere + it }
 
     val potentialMoves = calculateNextMoves(position, keysFound)
-    potentialMoves.map { move =>
+
+    //println(s"$keysFound, considering $potentialMoves")
+
+    val minTotalSteps = potentialMoves.map { move =>
       val allKeysFound = keysFound ++ List(move.key)
-      println(s"Found $allKeysFound, steps taken: ${stepsTaken + move.stepsAway}")
-      iterateMovesUntilAllKeysFound(move.point, stepsTaken + move.stepsAway, allKeysFound) }.min
+      iterateMovesUntilAllKeysFound(move.point, move.stepsAway + stepsTakenToHere, allKeysFound) }.min
+
+    hmSituationToSteps.put(situation, minTotalSteps - stepsTakenToHere)
+    minTotalSteps
   }
-  private def calculateNextMoves(position: Point, keys: List[Char]): List[PotentialTarget] = {
-    val potentialKeys = findAllKeysInRange(position, List(), keys, 0)
-    //println(s"potentialKeys = $potentialKeys")
+  private def calculateNextMoves(position: Point, keys: Set[Char]): Vector[PotentialTarget] = {
+    val potentialKeys = findAllKeysInRange(position, Set(), keys, 0)
     val distinctKeys = potentialKeys.map(_.key).distinct
     distinctKeys.map(findMinimumDistance(_, potentialKeys))
   }
-  private def findMinimumDistance(key: Char, potentialRoutes: List[PotentialTarget]): PotentialTarget = {
+  private def findMinimumDistance(key: Char, potentialRoutes: Vector[PotentialTarget]): PotentialTarget = {
     potentialRoutes.filter(_.key == key).minBy(_.stepsAway)
   }
 
   override def partB(): Any = -1
 
-  private def findBlockingDoorsInRange(currentPosition: Point, pointsVisited: List[Point], currentKeys: List[Char]): List[Char] = {
+  private def findBlockingDoorsInRange(currentPosition: Point, pointsVisited: List[Point], currentKeys: Set[Char]): List[Char] = {
     val ret = ListBuffer[Char]()
     val neighbours = getAdjacentSpacesOrWalls(currentPosition, pointsVisited, currentKeys)
 
@@ -72,26 +120,23 @@ class Day18 extends AbstractPuzzle(18) {
 
     ret.toList
   }
-  private def findAllKeysInRange(currentPosition: Point, pointsVisited: List[Point], currentKeys: List[Char], stepsSoFar: Int): List[PotentialTarget] = {
+  private def findAllKeysInRange(currentPosition: Point, pointsVisited: Set[Point], currentKeys: Set[Char], stepsSoFar: Int): Vector[PotentialTarget] = {
     val ret = ListBuffer[PotentialTarget]()
     val neighbours = getAdjacentSpaces(currentPosition, pointsVisited, currentKeys)
 
     val keys = neighbours.filter { it => it._2.isLower && !currentKeys.contains(it._2) }
-    //println(s"Adjacent keys: $keys, currentKeys: $currentKeys")
     val nonKeys = neighbours.filterNot { keys.contains(_) }
 
-    //println(s"At $currentPosition, keys: $keys, non-keys: $nonKeys")
     keys.foreach { key => ret.addOne(PotentialTarget(key._2, key._1, stepsSoFar + 1))}
-
 
     nonKeys.foreach { nonKey =>
       val positionsVisited = pointsVisited ++ List(currentPosition)
       ret.addAll(findAllKeysInRange(nonKey._1, positionsVisited, currentKeys, stepsSoFar + 1))
     }
 
-    ret.toList
+    ret.toVector
   }
-  private def getAdjacentSpaces(currentPosition: Point, pointsVisited: List[Point], currentKeys: List[Char]): List[(Point, Char)] = {
+  private def getAdjacentSpaces(currentPosition: Point, pointsVisited: Set[Point], currentKeys: Set[Char]): List[(Point, Char)] = {
     val neighbours = Day15Helpers.getNeighbours(currentPosition)
 
     for {
@@ -102,7 +147,7 @@ class Day18 extends AbstractPuzzle(18) {
       if !pointsVisited.contains(point)
     } yield (point, pointType)
   }
-  private def getAdjacentSpacesOrWalls(currentPosition: Point, pointsVisited: List[Point], currentKeys: List[Char]): List[(Point, Char)] = {
+  private def getAdjacentSpacesOrWalls(currentPosition: Point, pointsVisited: List[Point], currentKeys: Set[Char]): List[(Point, Char)] = {
     val neighbours = Day15Helpers.getNeighbours(currentPosition)
 
     for {
@@ -113,6 +158,7 @@ class Day18 extends AbstractPuzzle(18) {
     } yield (point, pointType)
   }
 
+  case class Situation(point: Point, currentKeys: Set[Char])
   case class PotentialTarget(key: Char, point: Point, stepsAway: Int)
 
   private def readMap(): mutable.HashMap[Point, Char] = {
