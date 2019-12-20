@@ -90,32 +90,32 @@ class Day20 extends AbstractPuzzle(20) {
   }
   private def calculateNextMoves(position: Point, lastPortal: Option[Portal], currentLevel: Option[Int]): Vector[PotentialTarget] = {
     val potentialKeys = findAllKeysInRange(position, Set(), 0)
-    println(s"** Calculation for position $position, depth $currentLevel, just come from $lastPortal **")
-    println(s"Potential keys: $potentialKeys")
+    //println(s"** Calculation for position $position, depth $currentLevel, just come from $lastPortal **")
+    //println(s"Potential keys: $potentialKeys")
 
     val distinctKeys = potentialKeys.map(_.portal).distinct
     var distinctTargets = distinctKeys.map(findMinimumDistance(_, potentialKeys))
 
-    val zzRoute = distinctTargets.find { target => target.portal.label == "ZZ" }
-    if (zzRoute.isDefined && onLevelZero(currentLevel)) {
-      val distance = zzRoute.get.stepsAway
-      distinctTargets = distinctTargets.filter { target => target.portal.label == "ZZ" || target.stepsAway < distance }
-    }
+//    val zzRoute = distinctTargets.find { target => target.portal.label == "ZZ" }
+//    if (zzRoute.isDefined && onLevelZero(currentLevel)) {
+//      val distance = zzRoute.get.stepsAway
+//      distinctTargets = distinctTargets.filter { target => target.portal.label == "ZZ" || target.stepsAway < distance }
+//    }
 
-    println(s"Filtered worse than ZZ: $distinctTargets")
+   // println(s"Filtered worse than ZZ: $distinctTargets")
 
-    if (lastPortal.isDefined) {
-      distinctTargets = distinctTargets.filterNot(_.portal == lastPortal.get)
-    }
+//    if (lastPortal.isDefined) {
+//      distinctTargets = distinctTargets.filterNot(_.portal == lastPortal.get)
+//    }
 
-    println(s"Filtered last portal: $distinctTargets")
+    //println(s"Filtered last portal: $distinctTargets")
 
     //Remove the outer non-ZZ portals if we're on level 0
     if (currentLevel.isDefined && currentLevel.get == 0) {
       distinctTargets = distinctTargets.filterNot{ target => target.portal.label != "ZZ" && target.portal.outerPt == target.pt }
     }
 
-    println(s"Filtered outer portals: $distinctTargets")
+    //println(s"Filtered outer portals: $distinctTargets")
 
     distinctTargets
   }
