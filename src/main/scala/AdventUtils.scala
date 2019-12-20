@@ -36,5 +36,11 @@ object AdventUtils {
     val coordList = toCoordinateList(map, default)
     coordList.foreach { list => println(list.mkString) }
   }
+
+  def getDistanceBetweenPoints(ptA: Point, ptB: Point): Double = {
+    val xLength = Math.abs(ptA.x - ptB.x)
+    val yLength = Math.abs(ptA.y - ptB.y)
+    Math.sqrt(xLength * xLength + yLength * yLength)
+  }
 }
 

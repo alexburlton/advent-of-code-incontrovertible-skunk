@@ -18,7 +18,7 @@ class AsteroidData(val centerPt: Point, val hmAngleToPoints: Map[Double, List[Po
       sortedAngles.foreach { angle =>
         val pts = mutableMap(angle)
         if (pts.nonEmpty) {
-          val sortedPoints = pts.sortBy(DayTenHelpers.getDistanceBetweenPoints(centerPt, _))
+          val sortedPoints = pts.sortBy(AdventUtils.getDistanceBetweenPoints(centerPt, _))
           val newPoints = sortedPoints.to(ListBuffer)
           val asteroidVaporized = newPoints.remove(0)
 
@@ -102,12 +102,6 @@ object DayTenHelpers {
         angle.setScale(3, BigDecimal.RoundingMode.HALF_UP).toDouble
       }
     }
-
-  def getDistanceBetweenPoints(ptA: Point, ptB: Point): Double = {
-      val xLength = Math.abs(ptA.x - ptB.x)
-      val yLength = Math.abs(ptA.y - ptB.y)
-      Math.sqrt(xLength * xLength + yLength * yLength)
-  }
 
   def getAsteroidPoints(inputLines: List[String]): List[Point] = {
     val pts = ListBuffer[Point]()
