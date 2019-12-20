@@ -7,35 +7,34 @@ class Day20 extends AbstractPuzzle(20) {
   val map: mutable.HashMap[Point, Char] = readMap()
   val centerPoint: Point = readCenterPoint(map)
   val (startingPoint, endingPoint, portals): (Point, Point, Set[Portal]) = findPortals(map, centerPoint)
-  var minFoundSoFar = 5000
+  var minFoundSoFar = 20000
+  //Have found a way in 13334
 
   case class Portal(label: String, outerPt: Point, innerPt: Point) {
     def findOtherPoint(point: Point): Point = {
       if (point == outerPt) innerPt else outerPt
     }
   }
-  case class PotentialTarget(portal: Portal, pt: Point, stepsAway: Int)
+  case class PotentialTarget(portal: Portal, pt: Point, stepsAway: Int) {
+    override def toString: String = {
+      val otherPt = portal.findOtherPoint(pt)
 
-//  override def partA(): Any = {
-//    val potentialMoves = calculateNextMoves(startingPoint, None, None)
-//
-//    val paths = potentialMoves.map { move =>
-//      iterateMovesUntilAtEnd(move.pt, move.stepsAway, move.portal, None)
-//    }
-//
-//    println(s"$paths")
-//
-//    paths.min
-//  }
-  override def partA(): Any = -1
+      val outerStr = if (pt == portal.outerPt) "OUTER" else "INNER"
+      s"Take $stepsAway steps to portal ${portal.label} $outerStr, warp from [${pt.x}, ${pt.y}] to [${otherPt.x}, ${otherPt.y}]"
+    }
 
-  override def partB(): Any = {
-    println(s"$portals")
+    def isOuter: Boolean = portal.outerPt == pt
+    def adjustDepth(depth: Option[Int]): Option[Int] = depth match {
+      case Some(value) => if (portal.label == "ZZ") Some(value) else if (isOuter) Some(value -1) else Some(value + 1)
+      case None => None
+    }
+  }
 
-    val potentialMoves = calculateNextMoves(startingPoint, None, Some(0))
+  override def partA(): Any = {
+    val potentialMoves = calculateNextMoves(startingPoint, None, None)
 
     val paths = potentialMoves.map { move =>
-      iterateMovesUntilAtEnd(move.pt, move.stepsAway, move.portal, Some(0))
+      iterateMovesUntilAtEnd(move, move.stepsAway, List(move), None)
     }
 
     println(s"$paths")
@@ -43,31 +42,52 @@ class Day20 extends AbstractPuzzle(20) {
     paths.min
   }
 
-  private def iterateMovesUntilAtEnd(position: Point, stepsTakenToHere: Int, lastPortal: Portal, currentLevel: Option[Int]): Int = {
+  override def partB(): Any = {
+    minFoundSoFar = 20000
+    val potentialMoves = calculateNextMoves(startingPoint, None, Some(0))
+    println(s"$potentialMoves")
+
+    val paths = potentialMoves.map { move =>
+      val newDepth = move.adjustDepth(Some(0))
+      iterateMovesUntilAtEnd(move, move.stepsAway, List(move), newDepth)
+    }
+
+    println(s"$paths")
+
+    paths.min
+  }
+
+  private def iterateMovesUntilAtEnd(moveTaken: PotentialTarget, stepsTakenToHere: Int, path: List[PotentialTarget], currentLevel: Option[Int]): Int = {
+    val position = moveTaken.pt
     if (position == endingPoint && onLevelZero(currentLevel)) {
       //Made it!
       updateMinSoFar(stepsTakenToHere)
       return stepsTakenToHere
     }
 
+    //Otherwise, we've taken a portal
+    val lastPortal = moveTaken.portal
     val stepsAfterTakingPortal = stepsTakenToHere + 1
     val positionAfterPortal = lastPortal.findOtherPoint(position)
     if (stepsAfterTakingPortal > minFoundSoFar) {
       //Return some big number so we stop checking this fork
-      //println(s"Taken $stepsTakenToHere - aborting")
       return stepsAfterTakingPortal  * 100
     }
 
-    val newLevelAfterPortal = getNewLevelAfterPortal(positionAfterPortal, lastPortal, currentLevel)
+    if (currentLevel.isDefined && currentLevel.get > 30) {
+      //println(s"Aborting as got too deep. Steps taken: $stepsAfterTakingPortal")
+      return minFoundSoFar * 100
+    }
 
-    val potentialMoves = calculateNextMoves(positionAfterPortal, Some(lastPortal), newLevelAfterPortal)
+    val potentialMoves = calculateNextMoves(positionAfterPortal, Some(lastPortal), currentLevel)
     if (potentialMoves.isEmpty) {
       //Hit a dead end by entering the outer level where we can't hit ZZ. Big number time...
       return minFoundSoFar * 100
     }
 
     val minTotalSteps = potentialMoves.map { move =>
-      iterateMovesUntilAtEnd(move.pt, move.stepsAway + stepsAfterTakingPortal, move.portal, newLevelAfterPortal) }.min
+      val newDepth = move.adjustDepth(currentLevel)
+      iterateMovesUntilAtEnd(move, move.stepsAway + stepsAfterTakingPortal, path ++ List(move), newDepth) }.min
 
     updateMinSoFar(minTotalSteps)
 
@@ -76,15 +96,9 @@ class Day20 extends AbstractPuzzle(20) {
   private def onLevelZero(currentLevel: Option[Int]): Boolean = {
     currentLevel.isEmpty || currentLevel.get == 0
   }
-  private def getNewLevelAfterPortal(newPosition: Point, portal: Portal, currentLevel: Option[Int]): Option[Int] = {
-    currentLevel match {
-      case None => None
-      case Some(value) => if (newPosition == portal.outerPt) Some(value + 1) else Some(value - 1)
-    }
-  }
   private def updateMinSoFar(totalSteps: Int): Unit = {
     if (totalSteps < minFoundSoFar) {
-      println(s"New best: $totalSteps")
+      println(s"** New best: $totalSteps **")
       minFoundSoFar = totalSteps
     }
   }
@@ -96,23 +110,28 @@ class Day20 extends AbstractPuzzle(20) {
     val distinctKeys = potentialKeys.map(_.portal).distinct
     var distinctTargets = distinctKeys.map(findMinimumDistance(_, potentialKeys))
 
-//    val zzRoute = distinctTargets.find { target => target.portal.label == "ZZ" }
-//    if (zzRoute.isDefined && onLevelZero(currentLevel)) {
-//      val distance = zzRoute.get.stepsAway
-//      distinctTargets = distinctTargets.filter { target => target.portal.label == "ZZ" || target.stepsAway < distance }
-//    }
+    val zzRoute = distinctTargets.find { target => target.portal.label == "ZZ" }
+    if (zzRoute.isDefined && onLevelZero(currentLevel)) {
+      val distance = zzRoute.get.stepsAway
+      distinctTargets = distinctTargets.filter { target => target.portal.label == "ZZ" || target.stepsAway < distance }
+    }
 
    // println(s"Filtered worse than ZZ: $distinctTargets")
 
-//    if (lastPortal.isDefined) {
-//      distinctTargets = distinctTargets.filterNot(_.portal == lastPortal.get)
-//    }
+    if (lastPortal.isDefined) {
+      distinctTargets = distinctTargets.filterNot(_.portal == lastPortal.get)
+    }
 
     //println(s"Filtered last portal: $distinctTargets")
 
     //Remove the outer non-ZZ portals if we're on level 0
     if (currentLevel.isDefined && currentLevel.get == 0) {
       distinctTargets = distinctTargets.filterNot{ target => target.portal.label != "ZZ" && target.portal.outerPt == target.pt }
+    }
+
+    //Remove the ZZ portal if we're not on level 0
+    if (currentLevel.isDefined && currentLevel.get != 0) {
+      distinctTargets = distinctTargets.filterNot { target => target.portal.label == "ZZ" }
     }
 
     //println(s"Filtered outer portals: $distinctTargets")
