@@ -70,10 +70,10 @@ class Day17 extends AbstractPuzzle(17) {
     val functionB = "R,6,L,8,L,10,R,6"
     val functionC = "L,8,L,6,L,10,L,6"
 
-    val inputs = convertInstructionStringToCharInput(mainRoutine) ++
-      convertInstructionStringToCharInput(functionA) ++
-      convertInstructionStringToCharInput(functionB) ++
-      convertInstructionStringToCharInput(functionC) ++
+    val inputs = AdventUtils.convertInstructionStringToASCIIInput(mainRoutine) ++
+      AdventUtils.convertInstructionStringToASCIIInput(functionA) ++
+      AdventUtils.convertInstructionStringToASCIIInput(functionB) ++
+      AdventUtils.convertInstructionStringToASCIIInput(functionC) ++
       List(110L, 10L) //no thanks to live feed
 
     val computer = new IntcodeComputer(intcode, inputs)
@@ -81,9 +81,6 @@ class Day17 extends AbstractPuzzle(17) {
     computer.process()
 
     computer.outputs.last
-  }
-  private def convertInstructionStringToCharInput(str: String): List[Long] = {
-    str.toCharArray.toList.map { _.toLong } ++ List(10)
   }
 
   /**

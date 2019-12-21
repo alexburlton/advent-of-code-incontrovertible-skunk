@@ -42,5 +42,9 @@ object AdventUtils {
     val yLength = Math.abs(ptA.y - ptB.y)
     Math.sqrt(xLength * xLength + yLength * yLength)
   }
+
+  def convertInstructionStringToASCIIInput(str: String): List[Long] = {
+    str.toCharArray.toList.map { _.toLong } ++ List(10)
+  }
 }
 
