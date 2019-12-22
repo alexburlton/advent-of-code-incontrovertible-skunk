@@ -1,41 +1,44 @@
 class Day22 extends AbstractPuzzle(22)
 {
   override def partA(): Any = {
-    var cards = (0L to 10006L).toVector
+    //var cards = (0L to 10006L).toVector
+    val size = 10007L
+    var index = 2019L
 
     inputLines.foreach { instruction =>
-      cards = getNewOrder(cards, instruction)
+      index = getNewIndex(index, instruction, size)
       //println(cards)
     }
 
-    cards.indexOf(2019)
+    index
   }
 
-  private def getNewOrder(cards: Vector[Long], instruction: String): Vector[Long] = {
+  private def getNewIndex(index: Long, instruction: String, size: Long): Long = {
     val cutRegex = """^cut (.*)$""".r
     val dealRegex = """^deal with increment (.*)$""".r
 
     if (instruction == "deal into new stack") {
-      cards.reverse
+      size - index - 1
     } else if (cutRegex.findAllMatchIn(instruction).nonEmpty) {
       val cutRegex(amount) = instruction
-      applyCut(cards, amount.toInt)
+      applyCut(index, amount.toInt, size)
     } else if (dealRegex.findAllMatchIn(instruction).nonEmpty) {
       val dealRegex(increment) = instruction
-      applyDealWithIncrement(cards, increment.toInt)
-    }else {
+      (index * increment.toInt) % size
+    } else {
       println(s"UNHANDLED: $instruction")
-      cards
+      index
     }
   }
 
-  private def applyCut(cards: Vector[Long], amount: Int): Vector[Long] = {
-    val actualCutAmount = if (amount > 0) amount else cards.length + amount
+  private def applyCut(index: Long, amount: Int, size: Long): Long = {
+    val actualCutAmount = if (amount > 0) amount else size + amount
 
-    val topStack = cards.slice(0, actualCutAmount)
-    val bottomStack = cards.slice(actualCutAmount, cards.length)
-
-    bottomStack ++ topStack
+    if (index < actualCutAmount) {
+      index + (size - actualCutAmount)
+    } else {
+      index - actualCutAmount
+    }
   }
 
   private def applyDealWithIncrement(cards: Vector[Long], increment: Int): Vector[Long] = {
@@ -46,14 +49,5 @@ class Day22 extends AbstractPuzzle(22)
     (index * increment) % cards.length
   }
 
-  override def partB(): Any = {
-    var cards = (0L to 10006L).toVector
-
-    inputLines.foreach { instruction =>
-      cards = getNewOrder(cards, instruction)
-      //println(cards)
-    }
-
-    cards.indexOf(2019)
-  }
+  override def partB(): Any = -1
 }
