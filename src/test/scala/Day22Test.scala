@@ -63,6 +63,25 @@ class Day22Test extends FlatSpec {
     assert(a == bInverse)
   }
 
+  "Constructed polynomial for part one example" should "match manually applied instructions" in {
+    val instructions = AdventUtils.readFile("inputs/Day22")
+    val size = BigInt(10007L)
+    val (a, b) = Day22Helpers.constructPolynomialForReverse(instructions, size)
+
+    val index = BigInt(6526)
+    val f_1 = Day22Helpers.applyInversedInstructions(instructions, size, index)
+    val f_2 = Day22Helpers.applyInversedInstructions(instructions, size, f_1)
+    val f_3 = Day22Helpers.applyInversedInstructions(instructions, size, f_2)
+
+    val calculated_f_1 = a.*(index).+(b).mod(size)
+    val calculated_f_2 = a.*(calculated_f_1).+(b).mod(size)
+    val calculated_f_3 = a.*(calculated_f_2).+(b).mod(size)
+
+    assert(f_1 == calculated_f_1)
+    assert(f_2 == calculated_f_2)
+    assert(f_3 == calculated_f_3)
+  }
+
   /*
   val result = applyInstructions(inputLines, size, index)
     val result2 = applyInstructions(inputLines, size, result)

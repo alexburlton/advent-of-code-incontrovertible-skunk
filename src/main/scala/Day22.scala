@@ -13,31 +13,9 @@ class Day22 extends AbstractPuzzle(22)
     val size = BigInt(119315717514047L)
     val index = BigInt(2020L)
 
-    val f_1 = Day22Helpers.applyInversedInstructions(inputLines, size, index)
-    val f_2 = Day22Helpers.applyInversedInstructions(inputLines, size, f_1)
-    val f_3 = Day22Helpers.applyInversedInstructions(inputLines, size, f_2)
+    val (a, b) = Day22Helpers.constructPolynomialForReverse(inputLines, size)
 
-    val a_numerator = f_1.-(f_2).%(size)
-    val a_denominator = index.-(f_1).%(size)
-
-    println(s"Want multiplicative inverse of $a_denominator mod $size")
-    val inverse = Day22Helpers.moduloInverse(a_denominator, size)
-
-    //So this should work...
-    val a = a_numerator.*(inverse).%(size)
-    val b = f_1.-(a * index).%(size)
-
-    println(s"a = $a, b = $b")
-
-    val calculated_f_1 = a.*(index).+(b).%(size)
-    val calculated_f_2 = a.*(calculated_f_1).+(b).%(size)
-    val calculated_f_3 = a.*(calculated_f_2).+(b).%(size)
-
-    println(s"f_1 = $f_1 = $calculated_f_1")
-    println(s"f_2 = $f_2 = $calculated_f_2")
-    println(s"f_3 = $f_3 = $calculated_f_3")
-
-    //Now do it N times
+    //Now apply the polynomial N times
     val n = BigInt(101741582076661L)
 
     val aToTheN = Day22Helpers.modPow(a, n, size)
@@ -48,7 +26,6 @@ class Day22 extends AbstractPuzzle(22)
     val remainder = b.*(quotient)
 
     println(s"$a to the $n base $size = $aToTheN")
-
 
     aPart.+(remainder).%(size).+(size)
   }
@@ -105,36 +82,72 @@ object Day22Helpers {
     ret
   }
   private def applyReversedInstruction(instruction: String, size: BigInt, index: BigInt): BigInt = {
-    if (instruction == "deal into new stack") {
-      size.-(index).-(1)
-    } else if (cutRegex.findAllMatchIn(instruction).nonEmpty) {
+    if (instruction == "deal into new stack")
+    {
+      size - index - 1
+    }
+    else if (cutRegex.findAllMatchIn(instruction).nonEmpty)
+    {
       val cutRegex(amount) = instruction
       val newAmount = -amount.toLong
       applyCut(index, newAmount, size)
-    } else if (dealRegex.findAllMatchIn(instruction).nonEmpty) {
-      val dealRegex(increment) = instruction
-      val parsedIncrement = BigInt(increment)
+    }
+    else if (dealRegex.findAllMatchIn(instruction).nonEmpty)
+    {
+      val dealRegex(incrementStr) = instruction
+      val increment = BigInt(incrementStr)
 
       var newIx: BigInt = index
-      while (newIx.%(parsedIncrement) != 0) {
-        newIx = newIx.+(size)
+      while (newIx % increment != 0) {
+        newIx = newIx + size
       }
 
-      newIx./(parsedIncrement)
-    } else {
+      newIx / increment
+    }
+    else
+    {
       println(s"UNHANDLED: $instruction")
       index
     }
   }
 
-  //Need to implement modular power so we can do number^(base - 2) % base in a reasonable amount of time.
+  /**
+   * Returns (a, b), where the reversed instructions correspond to ax + b
+   */
+  def constructPolynomialForReverse(instructions: List[String], size: BigInt): (BigInt, BigInt) = {
+    //Pick an arbitrary element that's in range
+    val index = size./(3)
+
+    //Calculate f(index) and f(f(index))
+    val f_1 = Day22Helpers.applyInversedInstructions(instructions, size, index)
+    val f_2 = Day22Helpers.applyInversedInstructions(instructions, size, f_1)
+
+    //a = f - f(f) / x - f, where / is "modulo division", i.e. times by modulo inverse
+    val a_numerator = f_1.-(f_2).%(size)
+    val a_denominator = index.-(f_1).%(size)
+    val inverse = Day22Helpers.moduloInverse(a_denominator, size)
+    val a = a_numerator.*(inverse).%(size)
+
+    //Now can compute b, as f(x) = ax + b => b = f(x) - ax
+    val b = f_1.-(a * index).%(size)
+
+    (a, b)
+  }
+
+  /**
+   * Use Euler's theorem to calculate modular inverse quickly
+   *
+   * https://en.wikipedia.org/wiki/Modular_multiplicative_inverse#Using_Euler's_theorem
+   */
   def moduloInverse(number: BigInt, base: BigInt): BigInt = {
     val result = modPow(number, base - 2, base)
-
-    println(s"Finding modulo inverse of $number in $base: $result")
     result
   }
 
+  /**
+   * Modular power method - that comes out of the box in Python... :(
+   * https://en.wikipedia.org/wiki/Modular_exponentiation#Right-to-left_binary_method
+   */
   def modPow(number: BigInt, power: BigInt, base: BigInt): BigInt = {
     var result = BigInt(1L)
     var currentNumber = number.mod(base)
