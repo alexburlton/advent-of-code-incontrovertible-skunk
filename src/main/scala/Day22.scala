@@ -1,13 +1,11 @@
 class Day22 extends AbstractPuzzle(22)
 {
   override def partA(): Any = {
-    //var cards = (0L to 10006L).toVector
     val size = 10007L
     var index = 2019L
 
     inputLines.foreach { instruction =>
       index = getNewIndex(index, instruction, size)
-      //println(cards)
     }
 
     index
@@ -39,14 +37,6 @@ class Day22 extends AbstractPuzzle(22)
     } else {
       index - actualCutAmount
     }
-  }
-
-  private def applyDealWithIncrement(cards: Vector[Long], increment: Int): Vector[Long] = {
-    cards.zipWithIndex.sortBy { case (_: Long, index: Int) => getNewIndex(index, increment, cards) }
-      .map[Long](_._1)
-  }
-  private def getNewIndex(index: Long, increment: Int, cards: Vector[Long]): Long = {
-    (index * increment) % cards.length
   }
 
   override def partB(): Any = -1
