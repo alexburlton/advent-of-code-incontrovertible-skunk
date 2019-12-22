@@ -1,3 +1,4 @@
+import scala.collection.mutable
 import scala.util.matching.Regex
 
 class Day22 extends AbstractPuzzle(22)
@@ -42,18 +43,42 @@ class Day22 extends AbstractPuzzle(22)
   }
 
   override def partB(): Any = {
-    val size = 10007L
-    var index = 6526L
+    val size = 119315717514047L
+    val index = 2020L
 
-    inputLines.reverse.foreach { instruction =>
-      index = applyReversedInstruction(instruction, size, index)
-    }
+    //want to find a single expression for applying the inverted list once.
+    val f_1 = applyInversedInstructions(inputLines, size, index)
+    val f_2 = applyInversedInstructions(inputLines, size, f_1)
+
+    val a_numerator = f_1 - f_2 + size
+    val a_denominator = index - f_1 + size
+
+    println(s"Want multiplicative inverse of $a_denominator mod $size")
+
+    val a = (27832204065150L * a_numerator) % size
+    val b = (f_1 - (a * 2020)) % size
+
+    println(s"a = $a, b = $b")
+
+    val calculated_f_1 = (a * index + b) % size
+    val calculated_f_2 = ((a * calculated_f_1) + b) % size
+
+    println(s"f_1 = ${f_1} = $calculated_f_1")
+    println(s"f_2 = ${f_2} = $calculated_f_2")
 
     index
   }
-//  private def invertInstructions(size: Long): List[String] = {
-//    inputLines.reverse.map { it => invertInstruction(it, size) }
-//  }
+
+  private def applyInversedInstructions(instructions: List[String], size: Long, index: Long): Long = {
+    var ret = index
+    inputLines.reverse.foreach { instruction =>
+      ret = applyReversedInstruction(instruction, size, ret)
+    }
+
+    ret
+  }
+
+
   private def applyReversedInstruction(instruction: String, size: Long, index: Long): Long = {
     if (instruction == "deal into new stack") {
       size - index - 1
