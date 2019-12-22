@@ -1,5 +1,10 @@
+import scala.util.matching.Regex
+
 class Day22 extends AbstractPuzzle(22)
 {
+  val cutRegex: Regex = """^cut (.*)$""".r
+  val dealRegex: Regex = """^deal with increment (.*)$""".r
+
   override def partA(): Any = {
     val size = 10007L
     var index = 2019L
@@ -12,9 +17,6 @@ class Day22 extends AbstractPuzzle(22)
   }
 
   private def getNewIndex(index: Long, instruction: String, size: Long): Long = {
-    val cutRegex = """^cut (.*)$""".r
-    val dealRegex = """^deal with increment (.*)$""".r
-
     if (instruction == "deal into new stack") {
       size - index - 1
     } else if (cutRegex.findAllMatchIn(instruction).nonEmpty) {
@@ -39,5 +41,37 @@ class Day22 extends AbstractPuzzle(22)
     }
   }
 
-  override def partB(): Any = -1
+  override def partB(): Any = {
+    val size = 10007L
+    var index = 6526L
+
+    inputLines.reverse.foreach { instruction =>
+      index = applyReversedInstruction(instruction, size, index)
+    }
+
+    index
+  }
+//  private def invertInstructions(size: Long): List[String] = {
+//    inputLines.reverse.map { it => invertInstruction(it, size) }
+//  }
+  private def applyReversedInstruction(instruction: String, size: Long, index: Long): Long = {
+    if (instruction == "deal into new stack") {
+      size - index - 1
+    } else if (cutRegex.findAllMatchIn(instruction).nonEmpty) {
+      val cutRegex(amount) = instruction
+      val newAmount = -amount.toInt
+      applyCut(index, newAmount, size)
+    } else if (dealRegex.findAllMatchIn(instruction).nonEmpty) {
+      val dealRegex(increment) = instruction
+      var newIx: Long = index
+      while (newIx % increment.toInt != 0) {
+        newIx += size
+      }
+
+      newIx / increment.toInt
+    } else {
+      println(s"UNHANDLED: $instruction")
+      index
+    }
+  }
 }
