@@ -82,13 +82,53 @@ class Day22Test extends FlatSpec {
     assert(f_3 == calculated_f_3)
   }
 
-  /*
-  val result = applyInstructions(inputLines, size, index)
-    val result2 = applyInstructions(inputLines, size, result)
+  "Applying polynomial n times at once" should "match result from applying iteratively" in {
+    val instructions = AdventUtils.readFile("inputs/Day22")
+    val size = BigInt(10007L)
+    val (a, b) = Day22Helpers.constructPolynomialForReverse(instructions, size)
 
-    val inverted1 = applyInversedInstructions(inputLines, size, result2)
-    val inverted = applyInversedInstructions(inputLines, size, inverted1)
+    val index = BigInt(6526)
 
-    println(s"$index -> $result -> $result2 -> $inverted1 -> $inverted")
-   */
+    val f_1 = a.*(index).+(b).mod(size)
+    val f_2 = a.*(f_1).+(b).mod(size)
+    val manual_f_3 = a.*(f_2).+(b).mod(size)
+
+    val calculated_f_3 = Day22Helpers.applyLinearModuloFunction(a, b, 3, size, index)
+    assert(calculated_f_3 == manual_f_3)
+  }
+
+  "Applying polynomial n times at once" should "match result from applying iteratively - large deck" in {
+    val instructions = AdventUtils.readFile("inputs/Day22")
+    val size = BigInt(119315717514047L)
+    val (a, b) = Day22Helpers.constructPolynomialForReverse(instructions, size)
+
+    val index = BigInt(2020)
+
+    val f_1 = a.*(index).+(b).mod(size)
+    val f_2 = a.*(f_1).+(b).mod(size)
+    val manual_f_3 = a.*(f_2).+(b).mod(size)
+
+    val calculated_f_3 = Day22Helpers.applyLinearModuloFunction(a, b, 3, size, index)
+    assert(calculated_f_3 == manual_f_3)
+  }
+
+  "Applying polynomial for part 2" should "get the right answer" in {
+    val instructions = AdventUtils.readFile("inputs/Day22")
+    val size = BigInt(119315717514047L)
+    val (a, b) = Day22Helpers.constructPolynomialForReverse(instructions, size)
+
+    val index = BigInt(2020)
+
+    val numberAtIndex2020 = Day22Helpers.applyLinearModuloFunction(a, b, BigInt(101741582076661L), size, index)
+    assert(numberAtIndex2020 == BigInt(79855812422607L))
+  }
+
+  "modPow algorithm" should "get answers that match Python implementation" in {
+    assert(Day22Helpers.modPow(6844, 2, 10007) == 7576)
+    assert(Day22Helpers.modPow(66, BigInt(119315717514045L), BigInt(119315717514047L)) == BigInt(1807813901728L))
+  }
+
+  "modular inverse" should "match python output for power" in {
+    assert(Day22Helpers.moduloInverse(66, BigInt(119315717514047L)) == BigInt(1807813901728L))
+  }
 }

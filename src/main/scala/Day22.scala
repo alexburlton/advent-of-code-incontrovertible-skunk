@@ -142,8 +142,6 @@ object Day22Helpers {
     val quotient = oneMinusAToTheN.*(Day22Helpers.moduloInverse(oneMinusA, size))
     val remainder = b.*(quotient)
 
-    //println(s"$a to the $times base $size = $aToTheN")
-
     aPart.+(remainder).mod(size)
   }
 
@@ -152,10 +150,7 @@ object Day22Helpers {
    *
    * https://en.wikipedia.org/wiki/Modular_multiplicative_inverse#Using_Euler's_theorem
    */
-  def moduloInverse(number: BigInt, base: BigInt): BigInt = {
-    val result = modPow(number, base - 2, base)
-    result
-  }
+  def moduloInverse(number: BigInt, base: BigInt): BigInt = modPow(number, base - 2, base)
 
   /**
    * Modular power method - that comes out of the box in Python... :(
