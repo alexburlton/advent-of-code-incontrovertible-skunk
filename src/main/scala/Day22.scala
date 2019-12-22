@@ -50,17 +50,18 @@ class Day22 extends AbstractPuzzle(22)
     val f_1 = applyInversedInstructions(inputLines, size, index)
     val f_2 = applyInversedInstructions(inputLines, size, f_1)
 
-    val a_numerator = f_1 - f_2 + size
+    val a_numerator = f_1 - f_2
     val a_denominator = index - f_1 + size
 
     println(s"Want multiplicative inverse of $a_denominator mod $size")
 
+    //WTF...
     val a = (27832204065150L * a_numerator) % size
     val b = (f_1 - (a * 2020)) % size
 
     println(s"a = $a, b = $b")
 
-    val calculated_f_1 = (a * index + b) % size
+    val calculated_f_1 = size + (a * index + b) % size
     val calculated_f_2 = ((a * calculated_f_1) + b) % size
 
     println(s"f_1 = ${f_1} = $calculated_f_1")
@@ -68,6 +69,18 @@ class Day22 extends AbstractPuzzle(22)
 
     index
   }
+
+//  private def modPow(number: Long, pow: Long, base: Long): Long = {
+//    var done = 0
+//    var result = number
+//    while (done < pow) {
+//      result = (result * pow) % base
+//      println(s"$result")
+//      done += 1
+//    }
+//
+//    result
+//  }
 
   private def applyInversedInstructions(instructions: List[String], size: Long, index: Long): Long = {
     var ret = index
