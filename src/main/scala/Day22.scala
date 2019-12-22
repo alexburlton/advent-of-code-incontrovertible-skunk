@@ -11,23 +11,10 @@ class Day22 extends AbstractPuzzle(22)
 
   override def partB(): Any = {
     val size = BigInt(119315717514047L)
-    val index = BigInt(2020L)
 
+    //Get the polynomial and apply it a buttload of times
     val (a, b) = Day22Helpers.constructPolynomialForReverse(inputLines, size)
-
-    //Now apply the polynomial N times
-    val n = BigInt(101741582076661L)
-
-    val aToTheN = Day22Helpers.modPow(a, n, size)
-    val aPart = aToTheN.*(index)
-    val oneMinusAToTheN = BigInt(1).-(aToTheN)
-    val oneMinusA = BigInt(1).-(a)
-    val quotient = oneMinusAToTheN.*(Day22Helpers.moduloInverse(oneMinusA, size))
-    val remainder = b.*(quotient)
-
-    println(s"$a to the $n base $size = $aToTheN")
-
-    aPart.+(remainder).%(size).+(size)
+    Day22Helpers.applyLinearModuloFunction(a, b, BigInt(101741582076661L), size, BigInt(2020L))
   }
 }
 
@@ -132,6 +119,32 @@ object Day22Helpers {
     val b = f_1.-(a * index).%(size)
 
     (a, b)
+  }
+
+  /**
+   * Apply a linear function N times, using the formula for the sum of a geometric series.
+   * Repeatedly applying Ax + B gives:
+   *
+   * Ax"2 + AB + B
+   * Ax"3 + A"2B + AB + B
+   * ...
+   * Ax"n + A"nB + A"(n-1)B + ... + B
+   *
+   * which becomes
+   *
+   * Ax"n + b(1-A"n)/(1-A) - this is still all modulo so that's weird division again!
+   */
+  def applyLinearModuloFunction(a: BigInt, b: BigInt, times: BigInt, size: BigInt, index: BigInt): BigInt = {
+    val aToTheN = Day22Helpers.modPow(a, times, size)
+    val aPart = aToTheN.*(index)
+    val oneMinusAToTheN = BigInt(1).-(aToTheN)
+    val oneMinusA = BigInt(1).-(a)
+    val quotient = oneMinusAToTheN.*(Day22Helpers.moduloInverse(oneMinusA, size))
+    val remainder = b.*(quotient)
+
+    //println(s"$a to the $times base $size = $aToTheN")
+
+    aPart.+(remainder).mod(size)
   }
 
   /**
