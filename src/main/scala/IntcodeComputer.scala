@@ -1,6 +1,6 @@
 import scala.collection.mutable.ListBuffer
 
-class IntcodeComputer(initialMemory: List[Long], private val initialInputs: List[Long] = List()) {
+class IntcodeComputer(initialMemory: List[Long], val initialInputs: List[Long] = List()) {
   private val memory: ListBuffer[Long] = initialMemory.to(ListBuffer)
   private val inputs: ListBuffer[Long] = initialInputs.to(ListBuffer)
 
