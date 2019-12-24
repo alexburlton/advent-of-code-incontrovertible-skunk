@@ -1,5 +1,6 @@
 import java.awt.Point
 
+import scala.collection.mutable
 import scala.collection.mutable.ListBuffer
 import scala.io.Source
 
@@ -12,6 +13,37 @@ object AdventUtils {
   }
 
   def parseAsIntcodeInput(inputLines: List[String]): List[Long] = inputLines.head.split(",").map(s => s.toLong).toList
+
+  def parseAsMapFile(mapLines: List[String]): Map[Point, String] = {
+    val hmPointToType = new mutable.HashMap[Point, String]
+
+    for (y <- mapLines.indices) {
+      val line = mapLines(y)
+      for (x <- line.indices) {
+        val char = line.charAt(x)
+
+        hmPointToType.put(new Point(x, y), char.toString)
+      }
+    }
+
+    hmPointToType.toMap
+  }
+
+  private def readMapFile(filename: String): Map[Point, String] = {
+    val mapLines = AdventUtils.readFile(filename)
+    val hmPointToType = new mutable.HashMap[Point, String]
+
+    for (y <- mapLines.indices) {
+      val line = mapLines(y)
+      for (x <- line.indices) {
+        val char = line.charAt(x)
+
+        hmPointToType.put(new Point(x, y), char.toString)
+      }
+    }
+
+    hmPointToType.toMap
+  }
 
   def toCoordinateList[V](map: Map[Point, V], default: V): List[List[V]] = {
     val allPoints = map.keys
