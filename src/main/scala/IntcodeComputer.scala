@@ -76,6 +76,12 @@ class IntcodeComputer(initialMemory: List[Long], val initialInputs: List[Long] =
     process()
   }
 
+  def processWithInputs(newInputs: List[Long]): Unit = {
+    waitingForInput = false
+    inputs.addAll(newInputs)
+    process()
+  }
+
   private def waitForInput(): Unit = {
     waitingForInput = true
 
